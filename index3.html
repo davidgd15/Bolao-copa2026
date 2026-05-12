@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bolão Copa do Mundo 2026</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css">
+    <link rel="icon" type="image/png" href="bolao-img.png">
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <style>
+        body { background: linear-gradient(135deg, #1e3c2f 0%, #2a5a3a 100%); min-height: 100vh; }
+        .container { background: rgba(255,255,255,0.95); border-radius: 20px; padding: 25px; margin-top: 30px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        h1 { font-weight: 700; color: #1e3c2f; text-align: center; margin-bottom: 20px; }
+        h3 { font-weight: 700; color: #1e3c2f; text-align: center; margin-bottom: 20px;}
+        .nav-tabs .nav-link { color: #1e3c2f; font-weight: 500; }
+        .nav-tabs .nav-link.active { background-color: #1e3c2f; color: white; }
+        table { font-size: 0.9rem; }
+        .table thead { background-color: #1e3c2f; color: white; }
+        .table td, .table th { vertical-align: middle; }
+        .placar-cell { width: 80px; text-align: center; font-weight: bold; }
+        .resultado-cell { width: 200px; text-align: center; }
+        .btn-salvar { background-color: #d4af37; border: none; font-weight: bold; color: #1e3c2f; }
+        .btn-salvar:hover { background-color: #b8942e; }
+        .ranking-ouro { background-color: #ffd700 !important; font-weight: bold; }
+        .ranking-prata { background-color: #c0c0c0 !important; font-weight: bold; }
+        .ranking-bronze { background-color: #cd7f32 !important; font-weight: bold; }
+        .form-select:focus, .form-control:focus { border-color: #1e3c2f; box-shadow: 0 0 0 0.2rem rgba(30,107,60,0.25); }
+        .online-indicator { display: inline-block; width: 10px; height: 10px; background: #4caf50; border-radius: 50%; margin-right: 5px; }
+        .fi { margin-right: 5px; }
+        .jogo-travado { background-color: #f8f9fa; }
+        .api-badge { font-size: 0.7rem; background: #1e3c2f; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px; }
+        .login-area { background: #f8f9fa; padding: 10px; border-radius: 10px; margin-bottom: 15px;}
+        .salvo-badge { background: #28a745; color: white; font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>⚽ BOLÃO COPA DO MUNDO 2026 ⚽ <br></h1>
+    <h3>SANTORINI & NETZ</h3>
+
+    <!-- Área de login -->
+    <div class="login-area" id="login-area">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <label class="form-label fw-bold mb-0">Participante:</label>
+                <select id="login-participante" class="form-select form-select-sm d-inline-block w-auto">
+                    <option value="">-- Selecione --</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <label class="form-label fw-bold mb-0">Senha:</label>
+                <input type="password" id="login-senha" class="form-control form-control-sm d-inline-block w-auto" placeholder="Senha">
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-sm btn-success" onclick="fazerLogin()">Entrar</button>
+            </div>
+            <div class="col-auto" id="info-logado" style="display:none;">
+                <span class="fw-bold text-success">Logado como <span id="nome-logado"></span></span>
+                <button class="btn btn-sm btn-outline-danger ms-2" onclick="fazerLogout()">Sair</button>
+            </div>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs mb-4" id="mainTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="jogos-tab" data-bs-toggle="tab" data-bs-target="#jogos" type="button">Jogos e Resultados</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="apostas-tab" data-bs-toggle="tab" data-bs-target="#apostas" type="button">Apostas</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="classificacao-tab" data-bs-toggle="tab" data-bs-target="#classificacao" type="button">Classificação</button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- Aba Jogos -->
+        <div class="tab-pane fade show active" id="jogos">
+            <div class="table-responsive" id="jogos-container"></div>
+            <button id="btn-forcar-salvar" class="btn btn-salvar mt-2" style="display: none;" onclick="salvarResultadosReais()">💾 Salvar</button>
+        </div>
+
+        <!-- Aba Apostas -->
+        <div class="tab-pane fade" id="apostas">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Visualizar apostas de:</label>
+                    <select id="participante-select" class="form-select" onchange="carregarApostasParticipante()">
+                        <option value="">-- Selecione --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-responsive" id="apostas-container" style="display: none;">
+                <table class="table table-striped table-hover" id="tabela-apostas">
+                    <thead><tr><th>#</th><th>Jogo</th><th>Placar (ex: 2-1)</th><th>Resultado</th><th></th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Aba Classificação -->
+        <div class="tab-pane fade" id="classificacao">
+            <div class="table-responsive" id="classificacao-container"></div>
+            <button id="btn-forcar-classificacao" class="btn btn-salvar mt-2" style="display: none;" onclick="atualizarClassificacao()">🔄 Forçar atualização</button>
+        </div>
+    </div>
+    <small class="text-muted fs-6"> <span class="api-badge">API SportScore</span></small>
+</div>
+
+<!-- Modal genérico -->
+<div class="modal fade" id="modalMensagem" tabindex="-1" aria-labelledby="modalMensagemLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="modalMensagemLabel">Mensagem</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body" id="modalMensagemBody">
+                Texto da mensagem.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // ==================== FIREBASE ====================
+    const firebaseConfig = {
+        apiKey: "AIzaSyDxb2mab1X5COeOG-FonpCXV3JSMZ3GBJk",
+        authDomain: "bolao-netz.firebaseapp.com",
+        projectId: "bolao-netz",
+        storageBucket: "bolao-netz.firebasestorage.app",
+        messagingSenderId: "88071578593",
+        appId: "1:88071578593:web:46514f2338c43d7e3b68a0"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // ==================== MAPEAMENTO DE BANDEIRAS ====================
+    const countryCodeMap = {
+        "México": "mx", "África do Sul": "za", "Coreia do Sul": "kr", "República Tcheca": "cz",
+        "Canadá": "ca", "Bósnia-Herzegovina": "ba", "Catar": "qa", "Suíça": "ch",
+        "Brasil": "br", "Marrocos": "ma", "Haiti": "ht", "Escócia": "gb-sct",
+        "Estados Unidos": "us", "Paraguai": "py", "Austrália": "au", "Turquia": "tr",
+        "Alemanha": "de", "Curaçao": "cw", "Costa do Marfim": "ci", "Equador": "ec",
+        "Países Baixos": "nl", "Japão": "jp", "Suécia": "se", "Tunísia": "tn",
+        "Bélgica": "be", "Egito": "eg", "Irã": "ir", "Nova Zelândia": "nz",
+        "Espanha": "es", "Cabo Verde": "cv", "Arábia Saudita": "sa", "Uruguai": "uy",
+        "França": "fr", "Senegal": "sn", "Noruega": "no", "Iraque": "iq",
+        "Argentina": "ar", "Argélia": "dz", "Áustria": "at", "Jordânia": "jo",
+        "Portugal": "pt", "RD Congo": "cd", "Uzbequistão": "uz", "Colômbia": "co",
+        "Inglaterra": "gb-eng", "Croácia": "hr", "Gana": "gh", "Panamá": "pa"
+    };
+    function flag(country) { const code = countryCodeMap[country]; return code ? `<span class="fi fi-${code}"></span>` : ''; }
+
+    // ==================== PARTICIPANTES ====================
+    const participantes = [
+        "David", "Danilo", "Gustavo", "Isabella", "Cesar",
+        "Diego", "Hugo", "Yargo", "Luis", "Daniela",
+        "Nayara", "Fábio", "Diana", "Natália", "Kamila",
+        "Jane", "Fernando", "Emily", "Marcelo"
+    ];
+
+    // ==================== JOGOS OFICIAIS ====================
+    const jogos = [];
+    let id = 1;
+    function addJogo(fase, grupo, time1, time2) { jogos.push({ id: id++, fase, grupo, time1, time2 }); }
+    // Rodada 1
+    addJogo("Fase de Grupos", "A", "México", "África do Sul");
+    addJogo("Fase de Grupos", "A", "Coreia do Sul", "República Tcheca");
+    addJogo("Fase de Grupos", "B", "Canadá", "Bósnia-Herzegovina");
+    addJogo("Fase de Grupos", "D", "Estados Unidos", "Paraguai");
+    addJogo("Fase de Grupos", "D", "Austrália", "Turquia");
+    addJogo("Fase de Grupos", "B", "Catar", "Suíça");
+    addJogo("Fase de Grupos", "C", "Brasil", "Marrocos");
+    addJogo("Fase de Grupos", "C", "Haiti", "Escócia");
+    addJogo("Fase de Grupos", "E", "Alemanha", "Curaçao");
+    addJogo("Fase de Grupos", "F", "Países Baixos", "Japão");
+    addJogo("Fase de Grupos", "E", "Costa do Marfim", "Equador");
+    addJogo("Fase de Grupos", "F", "Suécia", "Tunísia");
+    addJogo("Fase de Grupos", "H", "Espanha", "Cabo Verde");
+    addJogo("Fase de Grupos", "G", "Bélgica", "Egito");
+    addJogo("Fase de Grupos", "H", "Arábia Saudita", "Uruguai");
+    addJogo("Fase de Grupos", "G", "Irã", "Nova Zelândia");
+    addJogo("Fase de Grupos", "J", "Áustria", "Jordânia");
+    addJogo("Fase de Grupos", "I", "França", "Senegal");
+    addJogo("Fase de Grupos", "I", "Iraque", "Noruega");
+    addJogo("Fase de Grupos", "J", "Argentina", "Argélia");
+    addJogo("Fase de Grupos", "K", "Portugal", "RD Congo");
+    addJogo("Fase de Grupos", "L", "Inglaterra", "Croácia");
+    addJogo("Fase de Grupos", "L", "Gana", "Panamá");
+    addJogo("Fase de Grupos", "K", "Uzbequistão", "Colômbia");
+    // Rodada 2
+    addJogo("Fase de Grupos", "A", "República Tcheca", "África do Sul");
+    addJogo("Fase de Grupos", "B", "Suíça", "Bósnia-Herzegovina");
+    addJogo("Fase de Grupos", "B", "Canadá", "Catar");
+    addJogo("Fase de Grupos", "A", "México", "Coreia do Sul");
+    addJogo("Fase de Grupos", "D", "Turquia", "Paraguai");
+    addJogo("Fase de Grupos", "D", "Estados Unidos", "Austrália");
+    addJogo("Fase de Grupos", "C", "Escócia", "Marrocos");
+    addJogo("Fase de Grupos", "C", "Brasil", "Haiti");
+    addJogo("Fase de Grupos", "F", "Tunísia", "Japão");
+    addJogo("Fase de Grupos", "F", "Países Baixos", "Suécia");
+    addJogo("Fase de Grupos", "E", "Alemanha", "Costa do Marfim");
+    addJogo("Fase de Grupos", "E", "Equador", "Curaçao");
+    addJogo("Fase de Grupos", "H", "Espanha", "Arábia Saudita");
+    addJogo("Fase de Grupos", "G", "Bélgica", "Irã");
+    addJogo("Fase de Grupos", "H", "Uruguai", "Cabo Verde");
+    addJogo("Fase de Grupos", "G", "Nova Zelândia", "Egito");
+    addJogo("Fase de Grupos", "J", "Jordânia", "Argélia");
+    addJogo("Fase de Grupos", "J", "Argentina", "Áustria");
+    addJogo("Fase de Grupos", "I", "França", "Iraque");
+    addJogo("Fase de Grupos", "I", "Noruega", "Senegal");
+    addJogo("Fase de Grupos", "K", "Portugal", "Uzbequistão");
+    addJogo("Fase de Grupos", "L", "Inglaterra", "Gana");
+    addJogo("Fase de Grupos", "L", "Panamá", "Croácia");
+    addJogo("Fase de Grupos", "K", "Colômbia", "RD Congo");
+    // Rodada 3
+    addJogo("Fase de Grupos", "B", "Suíça", "Canadá");
+    addJogo("Fase de Grupos", "B", "Bósnia-Herzegovina", "Catar");
+    addJogo("Fase de Grupos", "C", "Escócia", "Brasil");
+    addJogo("Fase de Grupos", "C", "Marrocos", "Haiti");
+    addJogo("Fase de Grupos", "A", "República Tcheca", "México");
+    addJogo("Fase de Grupos", "A", "África do Sul", "Coreia do Sul");
+    addJogo("Fase de Grupos", "E", "Curaçao", "Costa do Marfim");
+    addJogo("Fase de Grupos", "E", "Equador", "Alemanha");
+    addJogo("Fase de Grupos", "F", "Japão", "Suécia");
+    addJogo("Fase de Grupos", "F", "Tunísia", "Países Baixos");
+    addJogo("Fase de Grupos", "D", "Turquia", "Estados Unidos");
+    addJogo("Fase de Grupos", "D", "Paraguai", "Austrália");
+    addJogo("Fase de Grupos", "I", "Noruega", "França");
+    addJogo("Fase de Grupos", "I", "Senegal", "Iraque");
+    addJogo("Fase de Grupos", "H", "Cabo Verde", "Arábia Saudita");
+    addJogo("Fase de Grupos", "H", "Uruguai", "Espanha");
+    addJogo("Fase de Grupos", "G", "Egito", "Irã");
+    addJogo("Fase de Grupos", "G", "Nova Zelândia", "Bélgica");
+    addJogo("Fase de Grupos", "L", "Panamá", "Inglaterra");
+    addJogo("Fase de Grupos", "L", "Croácia", "Gana");
+    addJogo("Fase de Grupos", "K", "Colômbia", "Portugal");
+    addJogo("Fase de Grupos", "K", "RD Congo", "Uzbequistão");
+    addJogo("Fase de Grupos", "J", "Argélia", "Áustria");
+    addJogo("Fase de Grupos", "J", "Jordânia", "Argentina");
+
+    // Mata-mata
+    const mataMata = [
+        { fase: "16 avos", jogo: 73, t1: "2A", t2: "2B" }, { fase: "16 avos", jogo: 74, t1: "1E", t2: "3C/D/F" },
+        { fase: "16 avos", jogo: 75, t1: "1F", t2: "2C" }, { fase: "16 avos", jogo: 76, t1: "1C", t2: "2F" },
+        { fase: "16 avos", jogo: 77, t1: "1I", t2: "3C/D/F/G/H" }, { fase: "16 avos", jogo: 78, t1: "2E", t2: "2I" },
+        { fase: "16 avos", jogo: 79, t1: "1A", t2: "3C/E/F/H/I" }, { fase: "16 avos", jogo: 80, t1: "1L", t2: "3E/H/I/J/K" },
+        { fase: "16 avos", jogo: 81, t1: "1D", t2: "3B/E/F/I/J" }, { fase: "16 avos", jogo: 82, t1: "1G", t2: "3A/E/H/I/J" },
+        { fase: "16 avos", jogo: 83, t1: "2K", t2: "2L" }, { fase: "16 avos", jogo: 84, t1: "1H", t2: "2J" },
+        { fase: "16 avos", jogo: 85, t1: "1B", t2: "3E/F/G/I/J" }, { fase: "16 avos", jogo: 86, t1: "1J", t2: "2H" },
+        { fase: "16 avos", jogo: 87, t1: "1K", t2: "3D/E/I/J/L" }, { fase: "16 avos", jogo: 88, t1: "2D", t2: "2G" },
+        { fase: "Oitavas", jogo: 89, t1: "V74", t2: "V77" }, { fase: "Oitavas", jogo: 90, t1: "V73", t2: "V75" },
+        { fase: "Oitavas", jogo: 91, t1: "V76", t2: "V78" }, { fase: "Oitavas", jogo: 92, t1: "V79", t2: "V80" },
+        { fase: "Oitavas", jogo: 93, t1: "V83", t2: "V84" }, { fase: "Oitavas", jogo: 94, t1: "V81", t2: "V82" },
+        { fase: "Oitavas", jogo: 95, t1: "V86", t2: "V88" }, { fase: "Oitavas", jogo: 96, t1: "V85", t2: "V87" },
+        { fase: "Quartas", jogo: 97, t1: "V89", t2: "V90" }, { fase: "Quartas", jogo: 98, t1: "V93", t2: "V94" },
+        { fase: "Quartas", jogo: 99, t1: "V91", t2: "V92" }, { fase: "Quartas", jogo: 100, t1: "V95", t2: "V96" },
+        { fase: "Semifinal", jogo: 101, t1: "V97", t2: "V98" }, { fase: "Semifinal", jogo: 102, t1: "V99", t2: "V100" },
+        { fase: "3º Lugar", jogo: 103, t1: "Perdedor J101", t2: "Perdedor J102" },
+        { fase: "Final", jogo: 104, t1: "Vencedor J101", t2: "Vencedor J102" }
+    ];
+    mataMata.forEach(m => jogos.push({ id: m.jogo, fase: m.fase, grupo: "", time1: m.t1, time2: m.t2 }));
+
+    // ==================== ESTADO GLOBAL ====================
+    const resultadosDocRef = db.collection('resultados').doc('jogos');
+    const apostasCollectionRef = db.collection('apostas');
+    const participantesCollectionRef = db.collection('participantes');
+
+    let resultadosAtuais = {};
+    let placaresAPI = {};
+    let apostasAtuais = {};
+    let senhasParticipantes = {};
+
+    let usuarioLogado = null;
+
+    // ==================== FUNÇÕES AUXILIARES ====================
+    function resultadoTexto(golsT1, golsT2) {
+        if (golsT1 > golsT2) return 'Casa';
+        if (golsT1 < golsT2) return 'Fora';
+        return 'Empate';
+    }
+    function jogoPossuiResultadoOficial(id) {
+        const res = resultadosAtuais[id];
+        return res && typeof res.golsT1 === 'number' && typeof res.golsT2 === 'number';
+    }
+    function getResultadoDisplay(jogo, placarStr) {
+        if (!placarStr) return '';
+        const partes = placarStr.split('-');
+        if (partes.length !== 2) return '';
+        const gT1 = parseInt(partes[0]), gT2 = parseInt(partes[1]);
+        if (isNaN(gT1) || isNaN(gT2)) return '';
+        if (gT1 > gT2) return `${flag(jogo.time1)} ${jogo.time1}`;
+        if (gT1 < gT2) return `${flag(jogo.time2)} ${jogo.time2}`;
+        return 'Empate';
+    }
+
+    function atualizarBotoesAdmin() {
+        const isAdmin = (usuarioLogado === "David");
+        document.getElementById('btn-forcar-salvar').style.display = isAdmin ? 'inline-block' : 'none';
+        document.getElementById('btn-forcar-classificacao').style.display = isAdmin ? 'inline-block' : 'none';
+    }
+
+    // ==================== MODAL ====================
+    function mostrarModal(titulo, mensagem, tipo = 'success') {
+        const modal = new bootstrap.Modal(document.getElementById('modalMensagem'));
+        document.getElementById('modalMensagemLabel').textContent = titulo;
+        document.getElementById('modalMensagemBody').textContent = mensagem;
+        const header = document.querySelector('#modalMensagem .modal-header');
+        header.className = `modal-header ${tipo === 'erro' ? 'bg-danger' : 'bg-success'} text-white`;
+        modal.show();
+    }
+
+    // ==================== LOGIN ====================
+    async function carregarSenhas() {
+        const snap = await participantesCollectionRef.get();
+        snap.forEach(doc => { senhasParticipantes[doc.id] = doc.data().senha; });
+    }
+
+    async function fazerLogin() {
+        const nome = document.getElementById('login-participante').value;
+        const senha = document.getElementById('login-senha').value;
+        if (!nome || !senha) {
+            mostrarModal('Atenção', 'Preencha nome e senha.', 'erro');
+            return;
+        }
+        
+        await carregarSenhas();
+        
+        if (senhasParticipantes[nome] === senha) {
+            usuarioLogado = nome;
+            document.getElementById('info-logado').style.display = 'block';
+            document.getElementById('nome-logado').textContent = nome;
+            document.getElementById('login-participante').disabled = true;
+            document.getElementById('login-senha').disabled = true;
+            document.querySelector('#login-area button.btn-success').style.display = 'none';
+            
+            document.getElementById('participante-select').value = nome;
+            carregarApostasParticipante();
+            atualizarBotoesAdmin();
+        } else {
+            mostrarModal('Erro', 'Senha incorreta!', 'erro');
+        }
+    }
+
+    function fazerLogout() {
+        usuarioLogado = null;
+        document.getElementById('info-logado').style.display = 'none';
+        document.getElementById('login-participante').disabled = false;
+        document.getElementById('login-senha').disabled = false;
+        document.querySelector('#login-area button.btn-success').style.display = 'inline-block';
+        document.getElementById('login-senha').value = '';
+        document.getElementById('participante-select').value = '';
+        document.getElementById('apostas-container').style.display = 'none';
+        atualizarBotoesAdmin();
+    }
+
+    // ==================== APOSTAS ====================
+    function carregarApostasParticipante() {
+        const participante = document.getElementById('participante-select').value;
+        const container = document.getElementById('apostas-container');
+        if (!participante) { container.style.display = 'none'; return; }
+        container.style.display = 'block';
+        const betsParticipante = apostasAtuais[participante] || {};
+        const tbody = document.querySelector('#tabela-apostas tbody');
+        tbody.innerHTML = '';
+        const isOwner = (usuarioLogado === participante);
+
+        jogos.forEach(jogo => {
+            const bet = betsParticipante[jogo.id] || { placar: '', resultado: '', salvo: false };
+            const tr = document.createElement('tr');
+            let placarHTML, resultadoHTML, acaoHTML;
+
+            if (isOwner && !bet.salvo) {
+                placarHTML = `<input type="text" class="form-control form-control-sm placar-input" placeholder="ex: 2-1" value="${bet.placar}" style="width:80px; text-align:center;">`;
+                resultadoHTML = `<select class="form-select form-select-sm resultado-select" style="width:200px;">
+                    <option value="">--</option>
+                    <option value="Casa" ${bet.resultado === 'Casa' ? 'selected' : ''}>Vitória ${jogo.time1}</option>
+                    <option value="Fora" ${bet.resultado === 'Fora' ? 'selected' : ''}>Vitória ${jogo.time2}</option>
+                    <option value="Empate" ${bet.resultado === 'Empate' ? 'selected' : ''}>Empate</option>
+                </select>`;
+                acaoHTML = `<button class="btn btn-sm btn-salvar" onclick="salvarApostaJogo('${participante}', ${jogo.id})">Salvar</button>`;
+            } else {
+                placarHTML = bet.placar || '<span class="text-muted">-</span>';
+                resultadoHTML = bet.resultado ? 
+                    (bet.resultado === 'Casa' ? `Vitória ${jogo.time1}` : bet.resultado === 'Fora' ? `Vitória ${jogo.time2}` : 'Empate') 
+                    : '<span class="text-muted">-</span>';
+                acaoHTML = bet.salvo ? '<span class="salvo-badge">✅ Salvo</span>' : '';
+            }
+
+            tr.innerHTML = `
+                <td>${jogo.id}</td>
+                <td>${flag(jogo.time1)} ${jogo.time1} vs ${flag(jogo.time2)} ${jogo.time2}</td>
+                <td>${placarHTML}</td>
+                <td>${resultadoHTML}</td>
+                <td>${acaoHTML}</td>`;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function salvarApostaJogo(participante, idJogo) {
+        if (usuarioLogado !== participante) {
+            mostrarModal('Erro', 'Você não está logado como ' + participante, 'erro');
+            return;
+        }
+        const linhas = document.querySelectorAll('#tabela-apostas tbody tr');
+        let linhaAlvo = null;
+        for (const l of linhas) {
+            if (parseInt(l.cells[0].textContent) === idJogo) { linhaAlvo = l; break; }
+        }
+        if (!linhaAlvo) return;
+        const inputPlacar = linhaAlvo.cells[2].querySelector('input');
+        const selectResultado = linhaAlvo.cells[3].querySelector('select');
+        if (!inputPlacar || !selectResultado) return;
+        const placar = inputPlacar.value.trim();
+        const resultado = selectResultado.value;
+        if (!placar || !resultado) {
+            mostrarModal('Atenção', 'Preencha placar e resultado.', 'erro');
+            return;
+        }
+        if (!/^\d+-\d+$/.test(placar)) {
+            mostrarModal('Formato inválido', 'Use o formato "2-1".', 'erro');
+            return;
+        }
+        if (!apostasAtuais[participante]) apostasAtuais[participante] = {};
+        apostasAtuais[participante][idJogo] = { placar, resultado, salvo: true };
+        try {
+            await apostasCollectionRef.doc(participante).set({ palpites: apostasAtuais[participante] }, { merge: true });
+            carregarApostasParticipante();
+            mostrarModal('Sucesso', `Aposta do jogo #${idJogo} salva!`);
+        } catch (e) {
+            console.error(e);
+            mostrarModal('Erro', 'Erro ao salvar a aposta.', 'erro');
+        }
+    }
+
+    // ==================== RENDERIZAÇÃO JOGOS ====================
+    function renderizarTabelaJogos() {
+        let html = `<table class="table table-striped table-hover" id="tabela-jogos">
+            <thead><tr><th>#</th><th>Fase</th><th>Grupo</th><th>Time 1</th><th>Time 2</th><th>Placar</th><th>Resultado</th></tr></thead><tbody>`;
+        jogos.forEach(jogo => {
+            let placar = '';
+            let travado = false;
+            if (jogoPossuiResultadoOficial(jogo.id)) {
+                const res = resultadosAtuais[jogo.id];
+                placar = `${res.golsT1}-${res.golsT2}`;
+                travado = true;
+            } else if (placaresAPI[jogo.id]) {
+                placar = placaresAPI[jogo.id];
+            }
+            const resultadoDisplay = getResultadoDisplay(jogo, placar);
+            html += `<tr class="${travado ? 'jogo-travado' : ''}">
+                <td>${jogo.id}</td><td>${jogo.fase}</td><td>${jogo.grupo}</td>
+                <td>${flag(jogo.time1)} ${jogo.time1}</td><td>${flag(jogo.time2)} ${jogo.time2}</td>
+                <td class="placar-cell">${placar}</td><td class="resultado-cell"><strong>${resultadoDisplay}</strong></td></tr>`;
+        });
+        html += '</tbody></table>';
+        document.getElementById('jogos-container').innerHTML = html;
+    }
+
+    function renderizarClassificacao() {
+        const classificacao = participantes.map(nome => {
+            let pontosPlacar = 0, pontosResultado = 0;
+            const bets = apostasAtuais[nome] || {};
+            for (const jogo of jogos) {
+                const res = resultadosAtuais[jogo.id];
+                if (!res || typeof res.golsT1 !== 'number' || typeof res.golsT2 !== 'number') continue;
+                const bet = bets[jogo.id];
+                if (!bet || !bet.placar || !bet.resultado) continue;
+                if (bet.placar === `${res.golsT1}-${res.golsT2}`) {
+                    pontosPlacar += 3;
+                } else {
+                    const resultadoReal = resultadoTexto(res.golsT1, res.golsT2);
+                    if (bet.resultado === resultadoReal) {
+                        pontosResultado += 1;
+                    }
+                }
+            }
+            return { nome, pontosPlacar, pontosResultado, total: pontosPlacar + pontosResultado };
+        });
+        classificacao.sort((a, b) => b.total - a.total || b.pontosPlacar - a.pontosPlacar);
+        let html = `<table class="table table-striped table-hover" id="tabela-classificacao">
+            <thead><tr><th>Posição</th><th>Participante</th><th>Pontos Placar (3)</th><th>Pontos Resultado (1)</th><th>TOTAL</th></tr></thead><tbody>`;
+        classificacao.forEach((item, index) => {
+            let classe = '';
+            if (index === 0) classe = 'ranking-ouro';
+            else if (index === 1) classe = 'ranking-prata';
+            else if (index === 2) classe = 'ranking-bronze';
+            html += `<tr class="${classe}"><td>${index + 1}º</td><td>${item.nome}</td><td>${item.pontosPlacar}</td><td>${item.pontosResultado}</td><td><strong>${item.total}</strong></td></tr>`;
+        });
+        html += '</tbody></table>';
+        document.getElementById('classificacao-container').innerHTML = html;
+    }
+
+    function atualizarTudo() {
+        renderizarTabelaJogos();
+        renderizarClassificacao();
+        const participanteSelecionado = document.getElementById('participante-select').value;
+        if (participanteSelecionado) carregarApostasParticipante();
+    }
+
+    // ==================== AUTO‑SAVE DE RESULTADOS ====================
+    async function salvarResultadoAutomatico(idJogo, golsT1, golsT2) {
+        resultadosAtuais[idJogo] = { golsT1, golsT2 };
+        try {
+            await resultadosDocRef.set({ data: resultadosAtuais }, { merge: true });
+            atualizarTudo();
+        } catch (e) { console.error(e); }
+    }
+
+    async function buscarPlacarAoVivo() {
+        try {
+            const resposta = await fetch('https://sportscore.com/api/widget/matches/?sport=football');
+            const dados = await resposta.json();
+            if (dados?.data?.length) {
+                const linhas = document.querySelectorAll('#tabela-jogos tbody tr');
+                for (const row of linhas) {
+                    const timeCasa = row.cells[3]?.textContent?.trim();
+                    const timeFora = row.cells[4]?.textContent?.trim();
+                    if (!timeCasa || !timeFora) continue;
+                    const match = dados.data.find(m => {
+                        const h = m.home_team?.name?.toLowerCase();
+                        const a = m.away_team?.name?.toLowerCase();
+                        if (!h || !a) return false;
+                        return (h.includes(timeCasa.toLowerCase()) || timeCasa.toLowerCase().includes(h)) &&
+                               (a.includes(timeFora.toLowerCase()) || timeFora.toLowerCase().includes(a));
+                    });
+                    if (!match || match.home_score == null || match.away_score == null) continue;
+                    const idJogo = parseInt(row.cells[0].textContent);
+                    const gT1 = match.home_score, gT2 = match.away_score;
+                    const status = match.status?.toLowerCase();
+                    const acabou = (status === 'finished' || status === 'ft' || status === 'closed');
+                    if (acabou && !jogoPossuiResultadoOficial(idJogo)) {
+                        await salvarResultadoAutomatico(idJogo, gT1, gT2);
+                        continue;
+                    }
+                    if (!jogoPossuiResultadoOficial(idJogo)) {
+                        placaresAPI[idJogo] = `${gT1}-${gT2}`;
+                        row.cells[5].textContent = placaresAPI[idJogo];
+                        const jogoObj = jogos.find(j => j.id === idJogo);
+                        if (jogoObj) row.cells[6].innerHTML = `<strong>${getResultadoDisplay(jogoObj, placaresAPI[idJogo])}</strong>`;
+                    }
+                }
+            }
+        } catch (e) { console.error('Erro SportScore:', e); }
+    }
+
+    // ==================== LISTENERS ====================
+    function configurarListeners() {
+        resultadosDocRef.onSnapshot(doc => {
+            if (doc.exists()) resultadosAtuais = doc.data().data || {};
+            else resultadosAtuais = {};
+            atualizarTudo();
+        });
+        apostasCollectionRef.onSnapshot(snapshot => {
+            apostasAtuais = {};
+            snapshot.forEach(doc => { apostasAtuais[doc.id] = doc.data().palpites || {}; });
+            const participanteSelecionado = document.getElementById('participante-select').value;
+            if (participanteSelecionado) carregarApostasParticipante();
+            renderizarClassificacao();
+        });
+    }
+
+    async function salvarResultadosReais() {
+        if (usuarioLogado !== "David") {
+            mostrarModal('Acesso restrito', 'Apenas o administrador pode usar esta função.', 'erro');
+            return;
+        }
+        const novos = {};
+        document.querySelectorAll('#tabela-jogos tbody tr').forEach(row => {
+            const id = parseInt(row.cells[0].textContent);
+            if (jogoPossuiResultadoOficial(id)) return;
+            const txt = row.cells[5].textContent.trim();
+            if (!txt) return;
+            const p = txt.split('-');
+            if (p.length === 2) {
+                const g1 = parseInt(p[0]), g2 = parseInt(p[1]);
+                if (!isNaN(g1) && !isNaN(g2)) novos[id] = { golsT1: g1, golsT2: g2 };
+            }
+        });
+        if (Object.keys(novos).length === 0) {
+            mostrarModal('Nada a salvar', 'Nenhum placar novo encontrado.', 'erro');
+            return;
+        }
+        resultadosAtuais = { ...resultadosAtuais, ...novos };
+        try {
+            await resultadosDocRef.set({ data: resultadosAtuais }, { merge: true });
+            atualizarTudo();
+            mostrarModal('Sucesso', 'Resultados salvos com sucesso!');
+        } catch (e) {
+            console.error(e);
+            mostrarModal('Erro', 'Erro ao salvar resultados.', 'erro');
+        }
+    }
+
+    async function atualizarClassificacao() {
+        if (usuarioLogado !== "David") {
+            mostrarModal('Acesso restrito', 'Apenas o administrador pode forçar a atualização.', 'erro');
+            return;
+        }
+        renderizarClassificacao();
+        mostrarModal('Atualizado', 'Classificação atualizada.');
+    }
+
+    // ==================== INICIALIZAÇÃO ====================
+    window.addEventListener('DOMContentLoaded', async () => {
+        const selectLogin = document.getElementById('login-participante');
+        const selectVisualizacao = document.getElementById('participante-select');
+        [selectLogin, selectVisualizacao].forEach(sel => {
+            sel.innerHTML = '<option value="">-- Selecione --</option>';
+            participantes.forEach(nome => {
+                const opt = document.createElement('option');
+                opt.value = nome; opt.textContent = nome;
+                sel.appendChild(opt);
+            });
+        });
+
+        await carregarSenhas();
+        for (const nome of participantes) {
+            if (!senhasParticipantes[nome]) {
+                await participantesCollectionRef.doc(nome).set({ senha: 'copa2026' });
+                senhasParticipantes[nome] = 'copa2026';
+            }
+        }
+
+        renderizarTabelaJogos();
+        renderizarClassificacao();
+        configurarListeners();
+        buscarPlacarAoVivo();
+        setInterval(buscarPlacarAoVivo, 30000);
+        document.getElementById('classificacao-tab').addEventListener('shown.bs.tab', renderizarClassificacao);
+        document.getElementById('apostas-tab').addEventListener('shown.bs.tab', () => {
+            if (usuarioLogado) {
+                document.getElementById('participante-select').value = usuarioLogado;
+                carregarApostasParticipante();
+            }
+        });
+    });
+</script>
+</body>
+</html>

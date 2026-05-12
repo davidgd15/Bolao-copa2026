@@ -10,34 +10,167 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <style>
-        body { background: linear-gradient(135deg, #1e3c2f 0%, #2a5a3a 100%); min-height: 100vh; }
+        body { background: linear-gradient(135deg, #bbbbbb 0%, #7e807f 100%); min-height: 100vh; }
         .container { background: rgba(255,255,255,0.95); border-radius: 20px; padding: 25px; margin-top: 30px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        h1 { font-weight: 700; color: #1e3c2f; text-align: center; margin-bottom: 20px; }
-        h3 { font-weight: 700; color: #1e3c2f; text-align: center; margin-bottom: 20px;}
-        .nav-tabs .nav-link { color: #1e3c2f; font-weight: 500; }
-        .nav-tabs .nav-link.active { background-color: #1e3c2f; color: white; }
+        h1 { font-weight: 700; color: #0e235e; text-align: center; margin-bottom: 20px; }
+        h3 { font-weight: 700; color: #0e235e; text-align: center; margin-bottom: 20px;}
+        .nav-tabs .nav-link { color: #0e235e; font-weight: 500; }
+        .nav-tabs .nav-link.active { background-color: #0e235e; color: white; }
+        .nav-tabs .nav-link:hover { border:0.5px solid #0e235e; transition: 0.6s ease;}
+        .btn-success { background-color: #0e235e; border: none; font-weight: bold; }
+        .btn-success:hover { background-color: #6d80ac; transition:  0.6s ease-in-out;}
         table { font-size: 0.9rem; }
-        .table thead { background-color: #1e3c2f; color: white; }
+        .table thead { background-color: #0e235e; color: white; }
         .table td, .table th { vertical-align: middle; }
         .placar-cell { width: 80px; text-align: center; font-weight: bold; }
         .resultado-cell { width: 200px; text-align: center; }
-        .btn-salvar { background-color: #d4af37; border: none; font-weight: bold; color: #1e3c2f; }
-        .btn-salvar:hover { background-color: #b8942e; }
+        .btn-salvar { background-color: #f0ac2f; border: none; font-weight: bold; color: black; }
+        .btn-salvar:hover { background-color: #b88526; }
+        .btn-editar { background-color: #6c757d; border: none; font-weight: bold; color: white; }
+        .btn-editar:hover { background-color: #5a6268; }
         .ranking-ouro { background-color: #ffd700 !important; font-weight: bold; }
         .ranking-prata { background-color: #c0c0c0 !important; font-weight: bold; }
         .ranking-bronze { background-color: #cd7f32 !important; font-weight: bold; }
-        .form-select:focus, .form-control:focus { border-color: #1e3c2f; box-shadow: 0 0 0 0.2rem rgba(30,107,60,0.25); }
-        .online-indicator { display: inline-block; width: 10px; height: 10px; background: #4caf50; border-radius: 50%; margin-right: 5px; }
+        .form-select:focus, .form-control:focus { border: 0.5px solid #0e235e; box-shadow: 0 0 0 0.5px #0e235e; }
         .fi { margin-right: 5px; }
         .jogo-travado { background-color: #f8f9fa; }
-        .api-badge { font-size: 0.7rem; background: #1e3c2f; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px; }
+        .api-badge { font-size: 0.7rem; background: #0e235e; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px; }
         .login-area { background: #f8f9fa; padding: 10px; border-radius: 10px; margin-bottom: 15px;}
-        .salvo-badge { background: #28a745; color: white; font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; }
+        .salvo-badge { background: #28a745; color: white; font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; margin-right: 5px; }
+        .bracket { display: flex; justify-content: space-around; flex-wrap: nowrap; overflow-x: auto; padding: 20px; font-size: 0.8rem; }
+        .round { display: flex; flex-direction: column; justify-content: space-around; margin: 0 10px; }
+        .match { border: 1px solid #0e235e; border-radius: 5px; background: #fff; margin: 5px 0; padding: 5px 10px; text-align: center; white-space: nowrap; }
+        .match-line { font-weight: bold; }
+        .data-cell { width: 70px; text-align: center; }
+        .toast-topo {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #28a745;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 30px;
+            z-index: 9999;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            opacity: 1;
+            transition: opacity 0.4s ease;
+        }
+        /* ==================== ESTILOS DO CHAVEAMENTO ==================== */
+        .bracket-wrapper {
+            position: relative;
+            overflow-x: auto;
+            padding: 20px 0;
+        }
+        .bracket-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .bracket-cols {
+            display: flex;
+            justify-content: space-around;
+            position: relative;
+            z-index: 2;
+        }
+        .round-column {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;      /* centraliza verticalmente os pares */
+            min-width: 180px;
+            padding: 0 10px;
+        }
+        .round-title {
+            background: #0e235e;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            padding: 6px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .pair-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;                      /* ocupa espaço igual verticalmente */
+            min-height: 100px;           /* altura mínima para toque */
+        }
+        .match-card {
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 6px 8px;
+            text-align: center;
+            width: 155px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            margin: 8px auto;
+        }
+        .match-card:hover {
+            transform: scale(1.02);
+            border-color: #d4af37;
+        }
+        .match-num {
+            font-size: 0.65rem;
+            font-weight: bold;
+            background: #eaece9;
+            border-radius: 10px;
+            padding: 1px 6px;
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+        .team {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+        .team .fi {
+            font-size: 1.2em;
+            border-radius: 3px;
+            box-shadow: 0 0 2px rgba(0,0,0,0.3);
+        }
+        .vs-text {
+            font-size: 0.7rem;
+            color: #888;
+            margin: 2px 0;
+        }
+        .placar {
+            font-weight: bold;
+            color: black;
+        }
+        .team.vencedor {
+            color: #173a1d;
+                        font-size: large;
+            font-weight: 700;
+        }
+        .btn-netzen {
+            background-color: #f0ac2f;
+            color: #712ad0;
+            border: 1px solid transparent;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.6s ease;
+        }
+        .btn-netzen:hover {
+            background-color: #712ad0;
+            color: #f0ac2f;
+            border-color: #f0ac2f;
+        }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>⚽ BOLÃO COPA DO MUNDO 2026 ⚽ <br></h1>
+    <h1>⚽ BOLÃO COPA DO MUNDO 2026 ⚽</h1>
     <h3>SANTORINI & NETZ</h3>
 
     <!-- Área de login -->
@@ -59,6 +192,10 @@
             <div class="col-auto" id="info-logado" style="display:none;">
                 <span class="fw-bold text-success">Logado como <span id="nome-logado"></span></span>
                 <button class="btn btn-sm btn-outline-danger ms-2" onclick="fazerLogout()">Sair</button>
+                <button id="btn-alterar-senha" class="btn btn-sm btn-outline-warning ms-2" style="display:none;" onclick="mostrarModalAlterarSenha()">🔑 Alterar senha</button>
+            </div>
+            <div class="col-auto ms-auto">
+                <a href="https://www.netzenergia.com.br/jornada-do-cliente" target="_blank" class="btn btn-sm btn-netzen ms-2">QUERO ENERGIA NETZ</a>
             </div>
         </div>
     </div>
@@ -71,7 +208,13 @@
             <button class="nav-link" id="apostas-tab" data-bs-toggle="tab" data-bs-target="#apostas" type="button">Apostas</button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="chaveamento-tab" data-bs-toggle="tab" data-bs-target="#chaveamento" type="button">Chaveamento Jogos</button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link" id="classificacao-tab" data-bs-toggle="tab" data-bs-target="#classificacao" type="button">Classificação</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="regras-tab" data-bs-toggle="tab" data-bs-target="#regras" type="button">Regras</button>
         </li>
     </ul>
 
@@ -84,12 +227,9 @@
 
         <!-- Aba Apostas -->
         <div class="tab-pane fade" id="apostas">
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">Visualizar apostas de:</label>
-                    <select id="participante-select" class="form-select" onchange="carregarApostasParticipante()">
-                        <option value="">-- Selecione --</option>
-                    </select>
+            <div class="row mb-3" id="salvar-todas-row" style="display: none;">
+                <div class="col">
+                    <button class="btn btn-salvar" onclick="salvarTodasApostas()">💾 Salvar todas as apostas</button>
                 </div>
             </div>
             <div class="table-responsive" id="apostas-container" style="display: none;">
@@ -105,6 +245,78 @@
             <div class="table-responsive" id="classificacao-container"></div>
             <button id="btn-forcar-classificacao" class="btn btn-salvar mt-2" style="display: none;" onclick="atualizarClassificacao()">🔄 Forçar atualização</button>
         </div>
+
+        <!-- Aba Chaveamento -->
+        <div class="tab-pane fade" id="chaveamento">
+            <div id="bracket-container"></div>
+        </div>
+
+                <!-- Aba Regras -->
+        <div class="tab-pane fade" id="regras">
+            <div class="rules-table">
+                <h4 class="text-center mb-3">📋 Regras do Bolão</h4>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Critério</th>
+                            <th>Pontos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Acertar o placar exato</td>
+                            <td>3 pontos</td>
+                        </tr>
+                        <tr>
+                            <td>Acertar o vencedor (ou empate)</td>
+                            <td>1 ponto</td>
+                        </tr>
+                        <tr>
+                            <td>Acertar o campeão</td>
+                            <td>20 pontos</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h5 class="text-center mt-4">💰 Premiação</h5>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Colocação</th>
+                            <th>Percentual do Pote</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1º lugar</td>
+                            <td>80%</td>
+                            <td>R$ 760,00</td>
+                        </tr>
+                        <tr>
+                            <td>2º lugar</td>
+                            <td>10%</td>
+                            <td>R$ 95,00</td>
+                        </tr>
+                        <tr>
+                            <td>3º lugar</td>
+                            <td>5%</td>
+                            <td>R$ 47,5</td>
+                        </tr>
+                        <tr>
+                            <td>Último lugar</td>
+                            <td>5%</td>
+                            <td>R$ 47,5</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="text-center mt-3">
+                    <p><strong>Valor da entrada:</strong> R$ 50,00</p>
+                    <p><strong>Pote total estimado:</strong> R$ <span id="pote-total"></span></p>
+                </div>
+            </div>
+        </div>
     </div>
     <small class="text-muted fs-6"> <span class="api-badge">API SportScore</span></small>
 </div>
@@ -117,11 +329,28 @@
                 <h5 class="modal-title" id="modalMensagemLabel">Mensagem</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
-            <div class="modal-body" id="modalMensagemBody">
-                Texto da mensagem.
-            </div>
+            <div class="modal-body" id="modalMensagemBody">Texto da mensagem.</div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal alterar senha -->
+<div class="modal fade" id="modalAlterarSenha" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">Alterar Senha</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <input type="password" id="nova-senha" class="form-control" placeholder="Nova senha">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" onclick="alterarSenha()">Salvar nova senha</button>
             </div>
         </div>
     </div>
@@ -163,7 +392,7 @@
         "David", "Danilo", "Gustavo", "Isabella", "Cesar",
         "Diego", "Hugo", "Yargo", "Luis", "Daniela",
         "Nayara", "Fábio", "Diana", "Natália", "Kamila",
-        "Jane", "Fernando"
+        "Jane", "Fernando", "Emily", "Marcelo"
     ];
 
     // ==================== JOGOS OFICIAIS ====================
@@ -277,7 +506,6 @@
     let placaresAPI = {};
     let apostasAtuais = {};
     let senhasParticipantes = {};
-
     let usuarioLogado = null;
 
     // ==================== FUNÇÕES AUXILIARES ====================
@@ -300,14 +528,24 @@
         if (gT1 < gT2) return `${flag(jogo.time2)} ${jogo.time2}`;
         return 'Empate';
     }
-
     function atualizarBotoesAdmin() {
         const isAdmin = (usuarioLogado === "David");
         document.getElementById('btn-forcar-salvar').style.display = isAdmin ? 'inline-block' : 'none';
         document.getElementById('btn-forcar-classificacao').style.display = isAdmin ? 'inline-block' : 'none';
     }
 
-    // ==================== MODAL ====================
+    // ==================== MODAIS ====================
+    function mostrarToastNoTopo(mensagem) {
+        const toast = document.createElement('div');
+        toast.className = 'toast-topo';
+        toast.textContent = mensagem;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+        }, 1500);
+    }
+
     function mostrarModal(titulo, mensagem, tipo = 'success') {
         const modal = new bootstrap.Modal(document.getElementById('modalMensagem'));
         document.getElementById('modalMensagemLabel').textContent = titulo;
@@ -315,6 +553,23 @@
         const header = document.querySelector('#modalMensagem .modal-header');
         header.className = `modal-header ${tipo === 'erro' ? 'bg-danger' : 'bg-success'} text-white`;
         modal.show();
+    }
+
+    function mostrarModalAlterarSenha() {
+        document.getElementById('nova-senha').value = '';
+        new bootstrap.Modal(document.getElementById('modalAlterarSenha')).show();
+    }
+
+    async function alterarSenha() {
+        const novaSenha = document.getElementById('nova-senha').value.trim();
+        if (!novaSenha) { mostrarModal('Atenção', 'Digite uma nova senha.', 'erro'); return; }
+        try {
+            await participantesCollectionRef.doc(usuarioLogado).set({ senha: novaSenha }, { merge: true });
+            senhasParticipantes[usuarioLogado] = novaSenha;
+            bootstrap.Modal.getInstance(document.getElementById('modalAlterarSenha')).hide();
+            document.getElementById('btn-alterar-senha').style.display = 'none';
+            mostrarModal('Sucesso', 'Senha alterada com sucesso!');
+        } catch (e) { console.error(e); mostrarModal('Erro', 'Erro ao alterar senha.', 'erro'); }
     }
 
     // ==================== LOGIN ====================
@@ -326,13 +581,8 @@
     async function fazerLogin() {
         const nome = document.getElementById('login-participante').value;
         const senha = document.getElementById('login-senha').value;
-        if (!nome || !senha) {
-            mostrarModal('Atenção', 'Preencha nome e senha.', 'erro');
-            return;
-        }
-        
+        if (!nome || !senha) { mostrarModal('Atenção', 'Preencha nome e senha.', 'erro'); return; }
         await carregarSenhas();
-        
         if (senhasParticipantes[nome] === senha) {
             usuarioLogado = nome;
             document.getElementById('info-logado').style.display = 'block';
@@ -340,9 +590,21 @@
             document.getElementById('login-participante').disabled = true;
             document.getElementById('login-senha').disabled = true;
             document.querySelector('#login-area button.btn-success').style.display = 'none';
-            
-            document.getElementById('participante-select').value = nome;
-            carregarApostasParticipante();
+            document.getElementById('btn-alterar-senha').style.display = (senha === 'copa2026') ? 'inline-block' : 'none';
+
+            try {
+                const docSnap = await apostasCollectionRef.doc(usuarioLogado).get();
+                if (docSnap.exists) {
+                    apostasAtuais[usuarioLogado] = docSnap.data().palpites || {};
+                } else {
+                    apostasAtuais[usuarioLogado] = {};
+                }
+            } catch (e) {
+                console.error('Erro ao carregar palpites:', e);
+                apostasAtuais[usuarioLogado] = {};
+            }
+
+            carregarApostasProprio();
             atualizarBotoesAdmin();
         } else {
             mostrarModal('Erro', 'Senha incorreta!', 'erro');
@@ -356,52 +618,452 @@
         document.getElementById('login-senha').disabled = false;
         document.querySelector('#login-area button.btn-success').style.display = 'inline-block';
         document.getElementById('login-senha').value = '';
-        document.getElementById('participante-select').value = '';
         document.getElementById('apostas-container').style.display = 'none';
+        document.getElementById('salvar-todas-row').style.display = 'none';
         atualizarBotoesAdmin();
     }
 
+    // ==================== FUNÇÕES DINÂMICAS (GRUPOS, TERCEIROS, VENCEDORES) ====================
+    function calcularEstatisticasGrupos(palpitesParticipante) {
+        const grupos = {
+            "A": ["México", "África do Sul", "Coreia do Sul", "República Tcheca"],
+            "B": ["Canadá", "Bósnia-Herzegovina", "Catar", "Suíça"],
+            "C": ["Brasil", "Marrocos", "Haiti", "Escócia"],
+            "D": ["Estados Unidos", "Paraguai", "Austrália", "Turquia"],
+            "E": ["Alemanha", "Curaçao", "Costa do Marfim", "Equador"],
+            "F": ["Países Baixos", "Japão", "Suécia", "Tunísia"],
+            "G": ["Bélgica", "Egito", "Irã", "Nova Zelândia"],
+            "H": ["Espanha", "Cabo Verde", "Arábia Saudita", "Uruguai"],
+            "I": ["França", "Senegal", "Iraque", "Noruega"],
+            "J": ["Argentina", "Argélia", "Áustria", "Jordânia"],
+            "K": ["Portugal", "RD Congo", "Uzbequistão", "Colômbia"],
+            "L": ["Inglaterra", "Croácia", "Gana", "Panamá"]
+        };
+        const stats = {};
+        for (const [letra, times] of Object.entries(grupos)) {
+            stats[letra] = {};
+            times.forEach(t => stats[letra][t] = { pts: 0, sg: 0, gs: 0 });
+            const jogosGrupo = jogos.filter(j => j.grupo === letra && j.fase === "Fase de Grupos");
+            jogosGrupo.forEach(jogo => {
+                const bet = palpitesParticipante[jogo.id];
+                if (!bet || !bet.placar || !bet.resultado) return;
+                const [g1, g2] = bet.placar.split('-').map(Number);
+                if (isNaN(g1) || isNaN(g2)) return;
+                stats[letra][jogo.time1].gs += g1;
+                stats[letra][jogo.time2].gs += g2;
+                stats[letra][jogo.time1].sg += (g1 - g2);
+                stats[letra][jogo.time2].sg += (g2 - g1);
+                if (bet.resultado === 'Casa') stats[letra][jogo.time1].pts += 3;
+                else if (bet.resultado === 'Fora') stats[letra][jogo.time2].pts += 3;
+                else { stats[letra][jogo.time1].pts += 1; stats[letra][jogo.time2].pts += 1; }
+            });
+        }
+        return stats;
+    }
+
+
+    function atualizarJogosMataMataComResultadosReais() {
+    // Verifica se todos os jogos da fase de grupos (IDs 1 a 72) já possuem resultado oficial
+    const todosGruposFinalizados = jogos
+        .filter(j => j.fase === "Fase de Grupos")
+        .every(j => jogoPossuiResultadoOficial(j.id));
+
+    if (!todosGruposFinalizados) return; // ainda não terminou
+
+    // Se já atualizou uma vez, não precisa repetir (evita sobrescrever)
+    if (window.__mataMataAtualizado) return;
+
+    // Calcula a classificação oficial a partir dos resultados reais
+    const resultadosOficiais = {};
+    for (const j of jogos) {
+        if (resultadosAtuais[j.id]) {
+            resultadosOficiais[j.id] = {
+                placar: `${resultadosAtuais[j.id].golsT1}-${resultadosAtuais[j.id].golsT2}`,
+                resultado: resultadoTexto(resultadosAtuais[j.id].golsT1, resultadosAtuais[j.id].golsT2)
+            };
+        }
+    }
+    const classificacaoOficial = calcularGrupos(resultadosOficiais);
+    const statsOficiais = calcularEstatisticasGrupos(resultadosOficiais);
+
+    // Atualiza os times dos jogos do mata‑mata (IDs ≥ 73)
+    for (const jogo of jogos) {
+        if (jogo.fase === "Fase de Grupos") continue; // só altera mata‑mata
+
+        // Resolve os placeholders com os dados oficiais
+        const t1 = resolverPlaceholder(jogo.time1, classificacaoOficial, statsOficiais, {});
+        const t2 = resolverPlaceholder(jogo.time2, classificacaoOficial, statsOficiais, {});
+
+        // Extrai apenas o nome do time (remove bandeira, se houver)
+        jogo.time1 = t1.replace(/<[^>]*>/g, '').trim();
+        jogo.time2 = t2.replace(/<[^>]*>/g, '').trim();
+    }
+
+    window.__mataMataAtualizado = true;
+    renderizarTabelaJogos(); // re-exibe a tabela com os nomes atualizados
+}
+
+
+    const vagasTerceiros = [
+        { placeholder: "3C/D/F",     grupos: ['C','D','F'] },
+        { placeholder: "3C/D/F/G/H", grupos: ['C','D','F','G','H'] },
+        { placeholder: "3C/E/F/H/I", grupos: ['C','E','F','H','I'] },
+        { placeholder: "3E/H/I/J/K", grupos: ['E','H','I','J','K'] },
+        { placeholder: "3B/E/F/I/J", grupos: ['B','E','F','I','J'] },
+        { placeholder: "3A/E/H/I/J", grupos: ['A','E','H','I','J'] },
+        { placeholder: "3E/F/G/I/J", grupos: ['E','F','G','I','J'] },
+        { placeholder: "3D/E/I/J/L", grupos: ['D','E','I','J','L'] }
+    ];
+
+    function getTerceiroDoGrupo(letra, statsGrupos) {
+        const times = Object.entries(statsGrupos[letra] || {});
+        if (times.length < 3) return null;
+        const ordenados = times.sort(([,a], [,b]) => b.pts - a.pts || b.sg - a.sg || b.gs - a.gs);
+        return { time: ordenados[2][0], stats: ordenados[2][1] };
+    }
+
+function atribuirTerceiros(statsGrupos) {
+    // 1. Coleta todos os 12 terceiros colocados
+    const todosTerceiros = [];
+    for (const letra of 'ABCDEFGHIJKL') {
+        const terc = getTerceiroDoGrupo(letra, statsGrupos);
+        if (terc) {
+            todosTerceiros.push({ grupo: letra, time: terc.time, stats: terc.stats });
+        }
+    }
+
+    // 2. Ordena pelos critérios FIFA
+    todosTerceiros.sort((a, b) => b.stats.pts - a.stats.pts || b.stats.sg - a.stats.sg || b.stats.gs - a.stats.gs);
+
+    // 3. Pega os 8 melhores
+    const classificados = todosTerceiros.slice(0, 8);
+
+    // 4. Vagas oficiais com seus grupos permitidos
+    const vagas = [
+        { placeholder: "3C/D/F",     grupos: ['C','D','F'] },
+        { placeholder: "3C/D/F/G/H", grupos: ['C','D','F','G','H'] },
+        { placeholder: "3C/E/F/H/I", grupos: ['C','E','F','H','I'] },
+        { placeholder: "3E/H/I/J/K", grupos: ['E','H','I','J','K'] },
+        { placeholder: "3B/E/F/I/J", grupos: ['B','E','F','I','J'] },
+        { placeholder: "3A/E/H/I/J", grupos: ['A','E','H','I','J'] },
+        { placeholder: "3E/F/G/I/J", grupos: ['E','F','G','I','J'] },
+        { placeholder: "3D/E/I/J/L", grupos: ['D','E','I','J','L'] }
+    ];
+
+    // 5. Backtracking para encontrar alocação válida
+    const alocar = (idx, disponiveis, atribuicao) => {
+        if (idx === vagas.length) return true; // todas as vagas preenchidas
+
+        const vaga = vagas[idx];
+        for (let i = 0; i < disponiveis.length; i++) {
+            if (vaga.grupos.includes(disponiveis[i].grupo)) {
+                const novoDisponiveis = [...disponiveis];
+                const escolhido = novoDisponiveis.splice(i, 1)[0];
+                if (alocar(idx + 1, novoDisponiveis, atribuicao)) {
+                    atribuicao[vaga.placeholder] = escolhido.time;
+                    return true;
+                }
+            }
+        }
+        return false; // nenhum time disponível para esta vaga
+    };
+
+    const atribuicao = {};
+    if (alocar(0, classificados, atribuicao)) {
+        return atribuicao; // sucesso!
+    } else {
+        // Fallback: se nenhuma alocação perfeita for possível (não deve acontecer),
+        // preenche com o melhor disponível, ignorando os grupos
+        console.warn('Não foi possível alocar respeitando todos os grupos. Usando fallback.');
+        const fallback = {};
+        const disponiveis = [...classificados];
+        vagas.forEach(vaga => {
+            fallback[vaga.placeholder] = disponiveis.length ? disponiveis.shift().time : vaga.placeholder;
+        });
+        return fallback;
+    }
+}
+
+    function vencedorJogo(jogoId, bets) {
+        const bet = bets[jogoId];
+        if (!bet || !bet.resultado || bet.resultado === 'Empate') return null;
+        const jogo = jogos.find(j => j.id === jogoId);
+        if (!jogo) return null;
+        return (bet.resultado === 'Casa') ? jogo.time1 : jogo.time2;
+    }
+
+    function resolverPlaceholder(texto, classificacao, statsGrupos, bets, atribuicaoTerceiros = null) {
+        if (countryCodeMap[texto]) {
+            return `${flag(texto)} ${texto}`;
+        }
+
+        if (atribuicaoTerceiros && atribuicaoTerceiros[texto]) {
+            const time = atribuicaoTerceiros[texto];
+            return `${flag(time)} ${time}`;
+        }
+
+        const simples = texto.match(/^(\d)([A-Z])$/);
+        if (simples) {
+            const pos = parseInt(simples[1]) - 1;
+            const grupo = simples[2];
+            if (classificacao[grupo] && classificacao[grupo][pos]) {
+                const time = classificacao[grupo][pos];
+                return `${flag(time)} ${time}`;
+            }
+            return texto;
+        }
+
+        const terc = texto.match(/^3([A-Z\/]+)$/);
+        if (terc) {
+            // Se temos um mapa de atribuição, ele já foi usado antes; mantido como fallback.
+            if (atribuicaoTerceiros && atribuicaoTerceiros[texto]) {
+                const time = atribuicaoTerceiros[texto];
+                return `${flag(time)} ${time}`;
+            }
+            const gruposList = terc[1].split('/');
+            // Fallback: usa a função antiga se não houver mapa (não deve acontecer agora)
+            const time = getTerceiroColocado(gruposList, statsGrupos);
+            if (time) return `${flag(time)} ${time}`;
+            return texto;
+        }
+
+        const vMatch = texto.match(/^V(?:encedor\s+J?)?(\d+)$/i);
+        if (vMatch) {
+            const jogoId = parseInt(vMatch[1]);
+            const venc = vencedorJogo(jogoId, bets);
+            if (venc) {
+                return resolverPlaceholder(venc, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+            }
+            return `Vencedor J${jogoId}`;
+        }
+
+        const pMatch = texto.match(/^Perdedor\s+J(\d+)$/i);
+        if (pMatch) {
+            const jogoId = parseInt(pMatch[1]);
+            const venc = vencedorJogo(jogoId, bets);
+            if (venc) {
+                const jogo = jogos.find(j => j.id === jogoId);
+                if (jogo) {
+                    const perdedor = (venc === jogo.time1) ? jogo.time2 : jogo.time1;
+                    return resolverPlaceholder(perdedor, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+                }
+            }
+            return `Perdedor J${jogoId}`;
+        }
+
+        return texto;
+    }
+
+    // Função auxiliar antiga para terceiros (usada como fallback)
+    function getTerceiroColocado(gruposList, statsGrupos) {
+        let melhor = null, melhorStats = null;
+        gruposList.forEach(letra => {
+            const times = Object.entries(statsGrupos[letra] || {});
+            const ordenados = times.sort(([,a], [,b]) => b.pts - a.pts || b.sg - a.sg || b.gs - a.gs);
+            if (ordenados.length >= 3) {
+                const [time, stat] = ordenados[2];
+                if (!melhor || stat.pts > melhorStats.pts ||
+                    (stat.pts === melhorStats.pts && stat.sg > melhorStats.sg) ||
+                    (stat.pts === melhorStats.pts && stat.sg === melhorStats.sg && stat.gs > melhorStats.gs)) {
+                    melhor = time;
+                    melhorStats = stat;
+                }
+            }
+        });
+        return melhor;
+    }
+
     // ==================== APOSTAS ====================
-    function carregarApostasParticipante() {
-        const participante = document.getElementById('participante-select').value;
-        const container = document.getElementById('apostas-container');
-        if (!participante) { container.style.display = 'none'; return; }
-        container.style.display = 'block';
+    function calcularGrupos(palpitesParticipante) {
+        const grupos = {
+            "A": ["México", "África do Sul", "Coreia do Sul", "República Tcheca"],
+            "B": ["Canadá", "Bósnia-Herzegovina", "Catar", "Suíça"],
+            "C": ["Brasil", "Marrocos", "Haiti", "Escócia"],
+            "D": ["Estados Unidos", "Paraguai", "Austrália", "Turquia"],
+            "E": ["Alemanha", "Curaçao", "Costa do Marfim", "Equador"],
+            "F": ["Países Baixos", "Japão", "Suécia", "Tunísia"],
+            "G": ["Bélgica", "Egito", "Irã", "Nova Zelândia"],
+            "H": ["Espanha", "Cabo Verde", "Arábia Saudita", "Uruguai"],
+            "I": ["França", "Senegal", "Iraque", "Noruega"],
+            "J": ["Argentina", "Argélia", "Áustria", "Jordânia"],
+            "K": ["Portugal", "RD Congo", "Uzbequistão", "Colômbia"],
+            "L": ["Inglaterra", "Croácia", "Gana", "Panamá"]
+        };
+        const resultado = {};
+        for (const [letra, times] of Object.entries(grupos)) {
+            const stats = {};
+            times.forEach(t => stats[t] = { pts: 0, sg: 0, gs: 0 });
+            const jogosGrupo = jogos.filter(j => j.grupo === letra && j.fase === "Fase de Grupos");
+            jogosGrupo.forEach(jogo => {
+                const bet = palpitesParticipante[jogo.id];
+                if (!bet || !bet.placar || !bet.resultado) return;
+                const [g1, g2] = bet.placar.split('-').map(Number);
+                if (isNaN(g1) || isNaN(g2)) return;
+                stats[jogo.time1].gs += g1;
+                stats[jogo.time2].gs += g2;
+                stats[jogo.time1].sg += (g1 - g2);
+                stats[jogo.time2].sg += (g2 - g1);
+                if (bet.resultado === 'Casa') stats[jogo.time1].pts += 3;
+                else if (bet.resultado === 'Fora') stats[jogo.time2].pts += 3;
+                else { stats[jogo.time1].pts += 1; stats[jogo.time2].pts += 1; }
+            });
+            const classificados = Object.entries(stats)
+                .sort(([,a], [,b]) => b.pts - a.pts || b.sg - a.sg || b.gs - a.gs)
+                .map(([time]) => time);
+            resultado[letra] = classificados;
+        }
+        return resultado;
+    }
+
+    function carregarApostasProprio() {
+        const participante = usuarioLogado;
+        if (!participante) {
+            document.getElementById('apostas-container').style.display = 'none';
+            document.getElementById('salvar-todas-row').style.display = 'none';
+            return;
+        }
+        document.getElementById('apostas-container').style.display = 'block';
+        document.getElementById('salvar-todas-row').style.display = 'block';
         const betsParticipante = apostasAtuais[participante] || {};
         const tbody = document.querySelector('#tabela-apostas tbody');
         tbody.innerHTML = '';
-        const isOwner = (usuarioLogado === participante);
+        const hoje = new Date();
+        const prazoEdicao = new Date('2026-06-08');
+        const podeEditar = hoje <= prazoEdicao;
+        const classificacao = calcularGrupos(betsParticipante);
+        const statsGrupos = calcularEstatisticasGrupos(betsParticipante);
+        const atribuicaoTerceiros = atribuirTerceiros(statsGrupos);
+        if (atribuicaoTerceiros === null) {
+            mostrarModal('Configuração inválida', 'Seus palpites de fase de grupos não permitem uma distribuição oficial dos terceiros colocados. Ajuste os resultados.', 'erro');
+            return;
+        }
+        const fasesGrupos = [
+            { titulo: 'FASE DE GRUPOS', subgrupos: true },
+            { titulo: 'MATA-MATA - 16 AVOS', filtro: j => j.fase === '16 avos' },
+            { titulo: 'MATA-MATA - Oitavas', filtro: j => j.fase === 'Oitavas' },
+            { titulo: 'MATA-MATA - Quartas', filtro: j => j.fase === 'Quartas' },
+            { titulo: 'Semifinal', filtro: j => j.fase === 'Semifinal' },
+            { titulo: 'Disputa de 3º lugar', filtro: j => j.fase === '3º Lugar' },
+            { titulo: 'FINAL', filtro: j => j.fase === 'Final' }
+        ];
+        const gruposLetras = ['A','B','C','D','E','F','G','H','I','J','K','L'];
 
-        jogos.forEach(jogo => {
-            const bet = betsParticipante[jogo.id] || { placar: '', resultado: '', salvo: false };
-            const tr = document.createElement('tr');
-            let placarHTML, resultadoHTML, acaoHTML;
-
-            if (isOwner && !bet.salvo) {
-                placarHTML = `<input type="text" class="form-control form-control-sm placar-input" placeholder="ex: 2-1" value="${bet.placar}" style="width:80px; text-align:center;">`;
-                resultadoHTML = `<select class="form-select form-select-sm resultado-select" style="width:200px;">
-                    <option value="">--</option>
-                    <option value="Casa" ${bet.resultado === 'Casa' ? 'selected' : ''}>Vitória ${jogo.time1}</option>
-                    <option value="Fora" ${bet.resultado === 'Fora' ? 'selected' : ''}>Vitória ${jogo.time2}</option>
-                    <option value="Empate" ${bet.resultado === 'Empate' ? 'selected' : ''}>Empate</option>
-                </select>`;
-                acaoHTML = `<button class="btn btn-sm btn-salvar" onclick="salvarApostaJogo('${participante}', ${jogo.id})">Salvar</button>`;
+        fasesGrupos.forEach(faseInfo => {
+            if (faseInfo.titulo === 'FASE DE GRUPOS') {
+                gruposLetras.forEach(letra => {
+                    const jogosDoGrupo = jogos.filter(j => j.grupo === letra && j.fase === 'Fase de Grupos');
+                    if (jogosDoGrupo.length === 0) return;
+                    const trGrupo = document.createElement('tr');
+                    trGrupo.innerHTML = `<td colspan="5" style="background:#1c2641; color:white; font-weight:bold; border-radius: 5px;">GRUPO ${letra}</td>`;
+                    tbody.appendChild(trGrupo);
+                    jogosDoGrupo.forEach(jogo => {
+                        tbody.appendChild(criarLinhaJogo(jogo, betsParticipante, podeEditar, classificacao, statsGrupos, atribuicaoTerceiros));
+                    });
+                });
             } else {
-                placarHTML = bet.placar || '<span class="text-muted">-</span>';
-                resultadoHTML = bet.resultado ? 
-                    (bet.resultado === 'Casa' ? `Vitória ${jogo.time1}` : bet.resultado === 'Fora' ? `Vitória ${jogo.time2}` : 'Empate') 
-                    : '<span class="text-muted">-</span>';
-                acaoHTML = bet.salvo ? '<span class="salvo-badge">✅ Salvo</span>' : '';
+                const jogosFase = jogos.filter(faseInfo.filtro);
+                if (jogosFase.length === 0) return;
+                const trFase = document.createElement('tr');
+                trFase.innerHTML = `<td colspan="5" style="background: #1c2641; color:white; font-weight:bold; border-radius: 5px;">${faseInfo.titulo}</td>`;
+                tbody.appendChild(trFase);
+                jogosFase.forEach(jogo => {
+                    tbody.appendChild(criarLinhaJogo(jogo, betsParticipante, podeEditar, classificacao, statsGrupos, atribuicaoTerceiros));
+                });
             }
-
-            tr.innerHTML = `
-                <td>${jogo.id}</td>
-                <td>${flag(jogo.time1)} ${jogo.time1} vs ${flag(jogo.time2)} ${jogo.time2}</td>
-                <td>${placarHTML}</td>
-                <td>${resultadoHTML}</td>
-                <td>${acaoHTML}</td>`;
-            tbody.appendChild(tr);
         });
+    }
+
+    function criarLinhaJogo(jogo, bets, podeEditar, classificacao, statsGrupos, atribuicaoTerceiros) {
+        const bet = bets[jogo.id] || { placar: '', resultado: '', salvo: false };
+        const tr = document.createElement('tr');
+        let placarHTML, resultadoHTML, acaoHTML;
+
+        const nomeTime1 = (jogo.fase === 'Fase de Grupos')
+            ? `${flag(jogo.time1)} ${jogo.time1}`
+            : resolverPlaceholder(jogo.time1, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+        const nomeTime2 = (jogo.fase === 'Fase de Grupos')
+            ? `${flag(jogo.time2)} ${jogo.time2}`
+            : resolverPlaceholder(jogo.time2, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+
+        const opcoesResultado = [
+            { value: 'Casa', label: `Vitória ${nomeTime1}` },
+            { value: 'Fora', label: `Vitória ${nomeTime2}` }
+        ];
+        if (jogo.fase === 'Fase de Grupos') {
+            opcoesResultado.push({ value: 'Empate', label: 'Empate' });
+        }
+
+        if (!bet.salvo) {
+            placarHTML = `<input type="text" class="form-control form-control-sm placar-input" placeholder="ex: 2-1" value="${bet.placar}" style="width:80px; text-align:center;">`;
+            resultadoHTML = `<select class="form-select form-select-sm resultado-select" style="width:200px;">
+                <option value="">--</option>
+                ${opcoesResultado.map(op => `<option value="${op.value}" ${bet.resultado === op.value ? 'selected' : ''}>${op.label}</option>`).join('')}
+            </select>`;
+            acaoHTML = `<button class="btn btn-sm btn-salvar" onclick="salvarApostaJogo('${usuarioLogado}', ${jogo.id})">Salvar</button>`;
+        } else {
+            placarHTML = bet.placar || '<span class="text-muted">-</span>';
+            let resultadoTexto = '';
+            if (bet.resultado === 'Casa') resultadoTexto = `Vitória ${nomeTime1}`;
+            else if (bet.resultado === 'Fora') resultadoTexto = `Vitória ${nomeTime2}`;
+            else if (bet.resultado === 'Empate') resultadoTexto = 'Empate';
+            resultadoHTML = resultadoTexto || '<span class="text-muted">-</span>';
+            acaoHTML = '<span class="salvo-badge">✅ Salvo</span>';
+            if (podeEditar) {
+                acaoHTML += ` <button class="btn btn-sm btn-editar" onclick="editarAposta(${jogo.id})">✏️ Editar</button>`;
+            }
+        }
+
+        const nomeJogo = `${nomeTime1} vs ${nomeTime2}`;
+        tr.innerHTML = `
+            <td>${jogo.id}</td>
+            <td>${nomeJogo}</td>
+            <td>${placarHTML}</td>
+            <td>${resultadoHTML}</td>
+            <td>${acaoHTML}</td>`;
+        return tr;
+    }
+
+    function editarAposta(idJogo) {
+        if (!usuarioLogado) return;
+        const bets = apostasAtuais[usuarioLogado] || {};
+        const bet = bets[idJogo];
+        if (!bet) return;
+        bet.salvo = false;
+        apostasCollectionRef.doc(usuarioLogado).set({ palpites: bets }, { merge: true })
+            .then(() => carregarApostasProprio())
+            .then(() => renderizarBracket());
+    }
+
+    function sincronizarApostasDaTabela() {
+        if (!usuarioLogado) return;
+        const bets = apostasAtuais[usuarioLogado] || {};
+        const linhas = document.querySelectorAll('#tabela-apostas tbody tr');
+        for (const row of linhas) {
+            if (row.cells.length < 5) continue;
+            const idJogo = parseInt(row.cells[0].textContent);
+            if (isNaN(idJogo)) continue;
+            const bet = bets[idJogo] || { placar: '', resultado: '', salvo: false };
+            if (bet.salvo) continue;
+            const inputPlacar = row.cells[2].querySelector('input');
+            const selectResultado = row.cells[3].querySelector('select');
+            if (inputPlacar) bet.placar = inputPlacar.value.trim();
+            if (selectResultado) bet.resultado = selectResultado.value;
+            bets[idJogo] = bet;
+        }
+        apostasAtuais[usuarioLogado] = bets;
+    }
+
+    function corrigirPlacar(placar, resultado) {
+        let [g1, g2] = placar.split('-').map(Number);
+        if (isNaN(g1) || isNaN(g2)) return placar;
+        if (resultado === 'Casa') {
+            if (g1 <= g2) { [g1, g2] = [g2, g1]; if (g1 <= g2) g1 = g2 + 1; }
+        } else if (resultado === 'Fora') {
+            if (g2 <= g1) { [g1, g2] = [g2, g1]; if (g2 <= g1) g2 = g1 + 1; }
+        } else if (resultado === 'Empate') {
+            if (g1 !== g2) { const maxGols = Math.max(g1, g2); g1 = g2 = maxGols; }
+        }
+        return `${g1}-${g2}`;
     }
 
     async function salvarApostaJogo(participante, idJogo) {
@@ -409,17 +1071,12 @@
             mostrarModal('Erro', 'Você não está logado como ' + participante, 'erro');
             return;
         }
-        const linhas = document.querySelectorAll('#tabela-apostas tbody tr');
-        let linhaAlvo = null;
-        for (const l of linhas) {
-            if (parseInt(l.cells[0].textContent) === idJogo) { linhaAlvo = l; break; }
-        }
-        if (!linhaAlvo) return;
-        const inputPlacar = linhaAlvo.cells[2].querySelector('input');
-        const selectResultado = linhaAlvo.cells[3].querySelector('select');
-        if (!inputPlacar || !selectResultado) return;
-        const placar = inputPlacar.value.trim();
-        const resultado = selectResultado.value;
+        sincronizarApostasDaTabela();
+        const bets = apostasAtuais[participante] || {};
+        const bet = bets[idJogo];
+        if (!bet || bet.salvo) return;
+        const placar = bet.placar;
+        const resultado = bet.resultado;
         if (!placar || !resultado) {
             mostrarModal('Atenção', 'Preencha placar e resultado.', 'erro');
             return;
@@ -428,22 +1085,81 @@
             mostrarModal('Formato inválido', 'Use o formato "2-1".', 'erro');
             return;
         }
-        if (!apostasAtuais[participante]) apostasAtuais[participante] = {};
-        apostasAtuais[participante][idJogo] = { placar, resultado, salvo: true };
+        bet.placar = corrigirPlacar(placar, resultado);
+        bet.salvo = true;
         try {
-            await apostasCollectionRef.doc(participante).set({ palpites: apostasAtuais[participante] }, { merge: true });
-            carregarApostasParticipante();
-            mostrarModal('Sucesso', `Aposta do jogo #${idJogo} salva!`);
+            await apostasCollectionRef.doc(participante).set({ palpites: bets }, { merge: true });
+            carregarApostasProprio();
+            renderizarBracket();
+            mostrarToastNoTopo(`Aposta do jogo #${idJogo} salva!`);
         } catch (e) {
             console.error(e);
             mostrarModal('Erro', 'Erro ao salvar a aposta.', 'erro');
         }
     }
 
-    // ==================== RENDERIZAÇÃO JOGOS ====================
+    async function salvarTodasApostas() {
+        if (!usuarioLogado) return;
+        const betsParticipante = apostasAtuais[usuarioLogado] || {};
+        const linhas = document.querySelectorAll('#tabela-apostas tbody tr');
+        let salvouAlgum = false;
+        for (const row of linhas) {
+            if (row.cells.length < 5) continue;
+            const idJogo = parseInt(row.cells[0].textContent);
+            if (isNaN(idJogo)) continue;
+            const bet = betsParticipante[idJogo] || { placar: '', resultado: '', salvo: false };
+            if (bet.salvo) continue;
+            const inputPlacar = row.cells[2].querySelector('input');
+            const selectResultado = row.cells[3].querySelector('select');
+            if (!inputPlacar || !selectResultado) continue;
+            const placar = inputPlacar.value.trim();
+            const resultado = selectResultado.value;
+            if (!placar || !resultado) continue;
+            if (!/^\d+-\d+$/.test(placar)) continue;
+            betsParticipante[idJogo] = { placar: corrigirPlacar(placar, resultado), resultado, salvo: true };
+            salvouAlgum = true;
+        }
+        if (!salvouAlgum) {
+            mostrarModal('Nada a salvar', 'Preencha corretamente os jogos antes de salvar todas as apostas.', 'erro');
+            return;
+        }
+        apostasAtuais[usuarioLogado] = betsParticipante;
+        try {
+            await apostasCollectionRef.doc(usuarioLogado).set({ palpites: betsParticipante }, { merge: true });
+            carregarApostasProprio();
+            renderizarBracket();
+            mostrarToastNoTopo('Todas as apostas válidas foram salvas!');
+        } catch (e) {
+            console.error(e);
+            mostrarModal('Erro', 'Erro ao salvar as apostas.', 'erro');
+        }
+    }
+
+    const datasJogos = {
+        1: "11/06", 2: "11/06", 3: "12/06", 4: "12/06", 5: "13/06", 6: "13/06",
+        7: "13/06", 8: "13/06", 9: "14/06", 10: "14/06", 11: "14/06", 12: "14/06",
+        13: "15/06", 14: "15/06", 15: "15/06", 16: "15/06", 17: "15/06", 18: "15/06",
+        19: "17/06", 20: "17/06", 21: "17/06", 22: "17/06", 23: "16/06", 24: "16/06",
+        25: "18/06", 26: "18/06", 27: "18/06", 28: "18/06", 29: "19/06", 30: "19/06",
+        31: "19/06", 32: "19/06", 33: "20/06", 34: "20/06", 35: "20/06", 36: "20/06",
+        37: "21/06", 38: "21/06", 39: "21/06", 40: "21/06", 41: "22/06", 42: "22/06",
+        43: "22/06", 44: "22/06", 45: "23/06", 46: "23/06", 47: "21/06", 48: "21/06",
+        49: "24/06", 50: "24/06", 51: "24/06", 52: "24/06", 53: "24/06", 54: "24/06",
+        55: "25/06", 56: "25/06", 57: "25/06", 58: "25/06", 59: "25/06", 60: "25/06",
+        61: "26/06", 62: "26/06", 63: "26/06", 64: "26/06", 65: "27/06", 66: "27/06",
+        67: "27/06", 68: "27/06", 69: "26/06", 70: "26/06", 71: "27/06", 72: "27/06",
+        73: "28/06", 74: "29/06", 75: "30/06", 76: "01/07", 77: "02/07", 78: "02/07",
+        79: "28/06", 80: "03/07", 81: "29/06", 82: "30/06", 83: "01/07", 84: "29/06",
+        85: "28/06", 86: "03/07", 87: "30/06", 88: "01/07",
+        89: "04/07", 90: "04/07", 91: "05/07", 92: "05/07",
+        93: "06/07", 94: "06/07", 95: "07/07", 96: "07/07",
+        97: "09/07", 98: "10/07", 99: "10/07", 100: "11/07",
+        101: "14/07", 102: "15/07", 103: "18/07", 104: "19/07"
+    };
+
     function renderizarTabelaJogos() {
         let html = `<table class="table table-striped table-hover" id="tabela-jogos">
-            <thead><tr><th>#</th><th>Fase</th><th>Grupo</th><th>Time 1</th><th>Time 2</th><th>Placar</th><th>Resultado</th></tr></thead><tbody>`;
+            <thead><tr><th>#</th><th>Data</th><th>Fase</th><th>Grupo</th><th>Time 1</th><th>Time 2</th><th>Placar</th><th>Resultado</th></tr></thead><tbody>`;
         jogos.forEach(jogo => {
             let placar = '';
             let travado = false;
@@ -455,8 +1171,9 @@
                 placar = placaresAPI[jogo.id];
             }
             const resultadoDisplay = getResultadoDisplay(jogo, placar);
+            const data = datasJogos[jogo.id] || '';
             html += `<tr class="${travado ? 'jogo-travado' : ''}">
-                <td>${jogo.id}</td><td>${jogo.fase}</td><td>${jogo.grupo}</td>
+                <td>${jogo.id}</td><td><strong>${data}</strong></td><td>${jogo.fase}</td><td>${jogo.grupo}</td>
                 <td>${flag(jogo.time1)} ${jogo.time1}</td><td>${flag(jogo.time2)} ${jogo.time2}</td>
                 <td class="placar-cell">${placar}</td><td class="resultado-cell"><strong>${resultadoDisplay}</strong></td></tr>`;
         });
@@ -473,13 +1190,15 @@
                 if (!res || typeof res.golsT1 !== 'number' || typeof res.golsT2 !== 'number') continue;
                 const bet = bets[jogo.id];
                 if (!bet || !bet.placar || !bet.resultado) continue;
-                if (bet.placar === `${res.golsT1}-${res.golsT2}`) {
+                const acertouPlacar = (bet.placar === `${res.golsT1}-${res.golsT2}`);
+                const resultadoReal = resultadoTexto(res.golsT1, res.golsT2);
+                const acertouResultado = (bet.resultado === resultadoReal);
+
+                if (acertouPlacar) {
                     pontosPlacar += 3;
-                } else {
-                    const resultadoReal = resultadoTexto(res.golsT1, res.golsT2);
-                    if (bet.resultado === resultadoReal) {
-                        pontosResultado += 1;
-                    }
+                }
+                if (acertouResultado) {
+                    pontosResultado += 1;
                 }
             }
             return { nome, pontosPlacar, pontosResultado, total: pontosPlacar + pontosResultado };
@@ -501,11 +1220,9 @@
     function atualizarTudo() {
         renderizarTabelaJogos();
         renderizarClassificacao();
-        const participanteSelecionado = document.getElementById('participante-select').value;
-        if (participanteSelecionado) carregarApostasParticipante();
+        if (usuarioLogado) carregarApostasProprio();
     }
 
-    // ==================== AUTO‑SAVE DE RESULTADOS ====================
     async function salvarResultadoAutomatico(idJogo, golsT1, golsT2) {
         resultadosAtuais[idJogo] = { golsT1, golsT2 };
         try {
@@ -551,18 +1268,17 @@
         } catch (e) { console.error('Erro SportScore:', e); }
     }
 
-    // ==================== LISTENERS ====================
     function configurarListeners() {
         resultadosDocRef.onSnapshot(doc => {
-            if (doc.exists()) resultadosAtuais = doc.data().data || {};
+        if (doc.exists()) resultadosAtuais = doc.data().data || {};
             else resultadosAtuais = {};
-            atualizarTudo();
+                atualizarJogosMataMataComResultadosReais(); // verifica e atualiza os nomes
+                atualizarTudo();
         });
         apostasCollectionRef.onSnapshot(snapshot => {
             apostasAtuais = {};
             snapshot.forEach(doc => { apostasAtuais[doc.id] = doc.data().palpites || {}; });
-            const participanteSelecionado = document.getElementById('participante-select').value;
-            if (participanteSelecionado) carregarApostasParticipante();
+            if (usuarioLogado) carregarApostasProprio();
             renderizarClassificacao();
         });
     }
@@ -608,19 +1324,130 @@
         mostrarModal('Atualizado', 'Classificação atualizada.');
     }
 
-    // ==================== INICIALIZAÇÃO ====================
+    function renderizarBracket() {
+    const container = document.getElementById('bracket-container');
+    if (!usuarioLogado) {
+        container.innerHTML = '<p class="text-center">Faça login para ver seu chaveamento previsto.</p>';
+        return;
+    }
+    const bets = apostasAtuais[usuarioLogado] || {};
+    const classificacao = calcularGrupos(bets);
+    const statsGrupos = calcularEstatisticasGrupos(bets);
+    const atribuicaoTerceiros = atribuirTerceiros(statsGrupos);
+
+    const resolver = (texto) => {
+        if (atribuicaoTerceiros && atribuicaoTerceiros[texto]) {
+            const time = atribuicaoTerceiros[texto];
+            return `${flag(time)} ${time}`;
+        }
+        return resolverPlaceholder(texto, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+    };
+
+    const cardHTML = (jogoId) => {
+        const jogo = jogos.find(j => j.id === jogoId);
+        if (!jogo) return '';
+        const t1 = resolver(jogo.time1);
+        const t2 = resolver(jogo.time2);
+        const bet = bets[jogoId];
+        const placarTexto = bet && bet.placar ? bet.placar : '';
+        let casaVenceu = false, foraVenceu = false;
+        if (bet && bet.resultado) {
+            casaVenceu = (bet.resultado === 'Casa');
+            foraVenceu = (bet.resultado === 'Fora');
+        }
+        return `
+            <div class="match-card" id="jogo-${jogoId}">
+                <div class="match-num">Jogo ${jogoId}</div>
+                <div class="team ${casaVenceu ? 'vencedor' : ''}">${t1}</div>
+                <div class="vs-text">vs</div>
+                <div class="team ${foraVenceu ? 'vencedor' : ''}">${t2}</div>
+                ${placarTexto ? `<div class="placar">${placarTexto}</div>` : ''}
+            </div>`;
+    };
+
+    const fases = [
+        { nome: "16 avos", jogos: [74,77, 73,75, 83,84, 81,82, 76,78, 79,80, 86,88, 85,87] },
+        { nome: "Oitavas", jogos: [89,90, 93,94, 91,92, 95,96] },
+        { nome: "Quartas", jogos: [97,98, 99,100] },
+        { nome: "Semifinal", jogos: [101, 102] },
+        { nome: "Final", jogos: [104] },
+        { nome: "3º Lugar", jogos: [103] }
+    ];
+
+    const conexoes = {
+        89: [74, 77], 90: [73, 75], 91: [76, 78], 92: [79, 80],
+        93: [83, 84], 94: [81, 82], 95: [86, 88], 96: [85, 87],
+        97: [89, 90], 98: [93, 94], 99: [91, 92], 100: [95, 96],
+        101: [97, 98], 102: [99, 100], 103: [101, 102], 104: [101, 102]
+    };
+
+    // Monta o HTML (agora com pair-group)
+    let html = '<div class="bracket-wrapper">';
+    html += '<svg class="bracket-svg" id="bracket-svg"></svg>';
+    html += '<div class="bracket-cols">';
+
+    fases.forEach(fase => {
+        html += `<div class="round-column"><div class="round-title">${fase.nome}</div>`;
+        const jogosFase = fase.jogos;
+        for (let i = 0; i < jogosFase.length; i += 2) {
+            html += `<div class="pair-group" id="pair-${fase.nome}-${i}">`;
+            html += cardHTML(jogosFase[i]);
+            if (jogosFase[i + 1]) {
+                html += cardHTML(jogosFase[i + 1]);
+            }
+            html += `</div>`;
+        }
+        html += `</div>`;
+    });
+
+    html += '</div></div>';
+    container.innerHTML = html;
+
+    // Desenha as linhas do SVG baseado nos centros dos pair-group
+    setTimeout(() => {
+        const svg = document.getElementById('bracket-svg');
+        const wrapper = document.querySelector('.bracket-wrapper');
+        if (!svg || !wrapper) return;
+
+        const wrapperRect = wrapper.getBoundingClientRect();
+        svg.setAttribute('viewBox', `0 0 ${wrapperRect.width} ${wrapperRect.height}`);
+        svg.style.width = wrapperRect.width + 'px';
+        svg.style.height = wrapperRect.height + 'px';
+
+        let lines = '';
+        for (const [proxJogo, anteriores] of Object.entries(conexoes)) {
+            const cardProx = document.getElementById(`jogo-${proxJogo}`);
+            if (!cardProx) continue;
+            const pairProx = cardProx.closest('.pair-group');
+            if (!pairProx) continue;
+            const rectProx = pairProx.getBoundingClientRect();
+            const xProx = rectProx.left - wrapperRect.left + rectProx.width / 2;
+            const yProx = rectProx.top - wrapperRect.top + rectProx.height / 2;
+
+            for (const antId of anteriores) {
+                const cardAnt = document.getElementById(`jogo-${antId}`);
+                if (!cardAnt) continue;
+                const pairAnt = cardAnt.closest('.pair-group');
+                if (!pairAnt) continue;
+                const rectAnt = pairAnt.getBoundingClientRect();
+                const xAnt = rectAnt.right - wrapperRect.left;
+                const yAnt = rectAnt.top - wrapperRect.top + rectAnt.height / 2;
+
+                lines += `<line x1="${xAnt}" y1="${yAnt}" x2="${xProx}" y2="${yProx}" stroke="#2a5a3a" stroke-width="2" opacity="0.8" />`;
+            }
+        }
+        svg.innerHTML = lines;
+    }, 200);
+}
+
     window.addEventListener('DOMContentLoaded', async () => {
         const selectLogin = document.getElementById('login-participante');
-        const selectVisualizacao = document.getElementById('participante-select');
-        [selectLogin, selectVisualizacao].forEach(sel => {
-            sel.innerHTML = '<option value="">-- Selecione --</option>';
-            participantes.forEach(nome => {
-                const opt = document.createElement('option');
-                opt.value = nome; opt.textContent = nome;
-                sel.appendChild(opt);
-            });
+        selectLogin.innerHTML = '<option value="">-- Selecione --</option>';
+        participantes.forEach(nome => {
+            const opt = document.createElement('option');
+            opt.value = nome; opt.textContent = nome;
+            selectLogin.appendChild(opt);
         });
-
         await carregarSenhas();
         for (const nome of participantes) {
             if (!senhasParticipantes[nome]) {
@@ -628,19 +1455,21 @@
                 senhasParticipantes[nome] = 'copa2026';
             }
         }
-
-        renderizarTabelaJogos();
-        renderizarClassificacao();
         configurarListeners();
-        buscarPlacarAoVivo();
+        setTimeout(() => {
+            renderizarTabelaJogos();
+            renderizarClassificacao();
+            renderizarBracket();
+            if (usuarioLogado) carregarApostasProprio();
+        }, 100);
         setInterval(buscarPlacarAoVivo, 30000);
         document.getElementById('classificacao-tab').addEventListener('shown.bs.tab', renderizarClassificacao);
         document.getElementById('apostas-tab').addEventListener('shown.bs.tab', () => {
-            if (usuarioLogado) {
-                document.getElementById('participante-select').value = usuarioLogado;
-                carregarApostasParticipante();
-            }
+            if (usuarioLogado) carregarApostasProprio();
         });
+        document.getElementById('chaveamento-tab').addEventListener('shown.bs.tab', renderizarBracket);
+            // ==================== REGRAS (cálculo do pote) ====================
+        document.getElementById('pote-total').textContent = (50 * participantes.length).toLocaleString('pt-BR');
     });
 </script>
 </body>
