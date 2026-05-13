@@ -81,7 +81,7 @@
         .round-column {
             display: flex;
             flex-direction: column;
-            justify-content: center;      /* centraliza verticalmente os pares */
+            justify-content: center;
             min-width: 180px;
             padding: 0 10px;
         }
@@ -99,8 +99,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            flex: 1;                      /* ocupa espaço igual verticalmente */
-            min-height: 100px;           /* altura mínima para toque */
+            flex: 1;
+            min-height: 100px;
         }
         .match-card {
             background: white;
@@ -150,7 +150,7 @@
         }
         .team.vencedor {
             font-size: 15px;
-            font-weight: 700;        /* negrito extra */
+            font-weight: 700;
             color: #0e235e;  
         }
         .btn-netzen {
@@ -195,11 +195,11 @@
             table-layout: fixed;
             width: 100%;
         }
-        #tabela-apostas th:nth-child(1) { width: 40px; }   /* # */
-        #tabela-apostas th:nth-child(2) { width: 30%; }    /* Seleção 1 */
-        #tabela-apostas th:nth-child(3) { width: 20%; }    /* Placar */
-        #tabela-apostas th:nth-child(4) { width: 30%; }    /* Seleção 2 */
-        #tabela-apostas th:nth-child(5) { width: auto; }   /* Ações */
+        #tabela-apostas th:nth-child(1) { width: 40px; }
+        #tabela-apostas th:nth-child(2) { width: 30%; }
+        #tabela-apostas th:nth-child(3) { width: 20%; }
+        #tabela-apostas th:nth-child(4) { width: 30%; }
+        #tabela-apostas th:nth-child(5) { width: auto; }
         #tabela-apostas td {
             text-align: center;
             vertical-align: middle;
@@ -211,14 +211,72 @@
         }
         .aposta-time-vencedor {   
             font-size: 15px;
-            font-weight: 700;        /* negrito extra */
-            color: #0e235e;          /* cor de destaque */
+            font-weight: 700;
+            color: #0e235e;
         }
-        /* placar ao lado do time no chaveamento */
         .match-score {
             font-weight: bold;
             margin-left: 4px;
             font-size: 0.9rem;
+        }
+
+        /* ==================== NOVO ESTILO DO MODAL DE PÊNALTIS ==================== */
+        #modalPenaltis .modal-content {
+            border: none;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        #modalPenaltis .modal-header {
+            background: linear-gradient(135deg, #1e3c2f 0%, #2a5a3a 100%);
+            color: white;
+            border-bottom: none;
+            text-align: center;
+            padding: 20px;
+        }
+        #modalPenaltis .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        #modalPenaltis .modal-body {
+            background: #f4f7f4;
+            padding: 25px 20px;
+        }
+        .penalty-question {
+            font-weight: 600;
+            color: #0e235e;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+        .penalty-choice-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 2px solid #1e3c2f;
+            border-radius: 12px;
+            background: white;
+            color: #1e3c2f;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+        .penalty-choice-btn:hover {
+            background: #1e3c2f;
+            color: white;
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .penalty-choice-btn .fi {
+            font-size: 1.5em;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .penalty-icon {
+            font-size: 1.5rem;
+            margin: 0 5px;
         }
     </style>
 </head>
@@ -227,7 +285,7 @@
     <h1>⚽ BOLÃO COPA DO MUNDO 2026 ⚽</h1>
     <h3>SANTORINI & NETZ</h3>
 
-    <!-- Área de login -->
+    <!-- Área de login (inalterada) -->
     <div class="login-area" id="login-area">
         <div class="row align-items-center">
             <div class="col-auto">
@@ -279,7 +337,7 @@
             <button id="btn-forcar-salvar" class="btn btn-salvar mt-2" style="display: none;" onclick="salvarResultadosReais()">💾 Salvar</button>
         </div>
 
-        <!-- Aba Apostas (NOVO LAYOUT) -->
+        <!-- Aba Apostas -->
         <div class="tab-pane fade" id="apostas">
             <div class="row mb-3" id="salvar-todas-row" style="display: none;">
                 <div class="col">
@@ -304,15 +362,13 @@
             <div id="bracket-container"></div>
         </div>
 
-        <!-- Aba Regras -->
+        <!-- Aba Regras (inalterada) -->
         <div class="tab-pane fade" id="regras">
             <div class="rules-table">
-
                 <div class="row mt-3 justify-content-center" style="margin-bottom: 40px;">
                     <div class="col-auto">
                         <div class="card border-0 shadow-sm p-3" style="background: #f0f9f4; border-radius: 15px; width: 250px; height: 80px;">
                             <div class="text-center">
-                                <!-- <span style="font-size: 1.5rem;">💵</span> -->
                                 <p class="mb-1 fw-bold" style="color: #0e235e;">💵 Valor da entrada</p>
                                 <p class="mb-0" style="font-size: 1.2rem; font-weight: 700; color: #2a5a3a;">R$ 50,00</p>
                             </div>
@@ -321,14 +377,12 @@
                     <div class="col-auto">
                         <div class="card border-0 shadow-sm p-3" style="background: #f0f9f4; border-radius: 15px; width: 250px; height: 80px;">
                             <div class="text-center">
-                              <!-- <span style="font-size: 1.5rem;">🏆</span>-->
                                 <p class="mb-1 fw-bold" style="color: #0e235e;">🏆 Pote total estimado</p>
                                 <p class="mb-0" style="font-size: 1.2rem; font-weight: 700; color: #2a5a3a;">R$ <span id="pote-total"></span></p>
                             </div>
                         </div>
                     </div>
                 </div>
-
                 <h4 class="text-center mb-3">📋 Regras do Bolão</h4>
                 <table class="table table-bordered">
                     <thead><tr><th>Critério</th><th>Pontos</th></tr></thead>
@@ -338,7 +392,7 @@
                         <tr><td>Acertar o campeão</td><td>20 pontos</td></tr>
                     </tbody>
                 </table>
-                <h4 class="text-center mt-4">💰 Premiação</h5>
+                <h4 class="text-center mt-4">💰 Premiação</h4>
                 <table class="table table-bordered">
                     <thead><tr><th>Colocação</th><th>Percentual do Pote</th><th>Valor</th></tr></thead>
                     <tbody>
@@ -348,14 +402,12 @@
                         <tr><td>Último lugar</td><td>5%</td><td>R$ 47,50</td></tr>
                     </tbody>
                 </table>
-
-                    <div class="mata-mata-rules" style="background: #f3f3f3; border-radius: 15px; padding: 15px;">
-                        <h4 class="text-center">📋 Regras mata-mata</h4>
-                        <p class="text-center mb-2"><strong>• Classificação:</strong> Avançam os dois primeiros de cada um dos 12 grupos (24 seleções) mais os <strong>8 melhores terceiros colocados</strong> entre todos os grupos.</p>
-                        <p class="text-center mb-2"><strong>• Confrontos:</strong> Os jogos das oitavas (16 avos) já são pré‑definidos pela FIFA, cruzando os primeiros colocados com terceiros de grupos específicos.</p>
-                        <p class="text-center mb-2"><strong>• Eliminação direta:</strong> A partir das oitavas, quem vencer avança. Se houver empate no tempo normal, haverá prorrogação e, persistindo, disputa de pênaltis.</p>
-                        <p class="text-center mb-2"><strong>• Fases seguintes:</strong> Oitavas → Quartas → Semifinais → Final (e disputa de 3º lugar).</p>
-                    </div>
+                <div class="mata-mata-rules" style="background: #f3f3f3; border-radius: 15px; padding: 15px;">
+                    <h4 class="text-center">📋 Regras mata-mata</h4>
+                    <p class="text-center mb-2"><strong>• Classificação:</strong> Avançam os dois primeiros de cada um dos 12 grupos (24 seleções) mais os <strong>8 melhores terceiros colocados</strong> entre todos os grupos.</p>
+                    <p class="text-center mb-2"><strong>• Confrontos:</strong> Os jogos do mata-mata 16 avos já são pré‑definidos pela FIFA, cruzando os primeiros colocados com terceiros de grupos específicos.</p>
+                    <p class="text-center mb-2"><strong>• Eliminação direta:</strong> Após a fase de grupos, quem vencer avança. Se houver empate no tempo normal, haverá prorrogação e, persistindo, disputa de pênaltis.</p>
+                    <p class="text-center mb-2"><strong>• Fases seguintes:</strong> Oitavas → Quartas → Semifinais → Final (e disputa de 3º lugar).</p>
                 </div>
             </div>
         </div>
@@ -393,6 +445,27 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-warning" onclick="alterarSenha()">Salvar nova senha</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Pênaltis (NOVO DESIGN) -->
+<div class="modal fade" id="modalPenaltis" tabindex="-1" aria-labelledby="modalPenaltisLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalPenaltisLabel">⚽ Pênaltis!</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="penalty-question">Empate no tempo normal!<br>Quem avança nos pênaltis?</p>
+                <button type="button" class="penalty-choice-btn" id="penalty-btn-casa">
+                    <span class="fi fi-br"></span> Brasil
+                </button>
+                <button type="button" class="penalty-choice-btn" id="penalty-btn-fora">
+                    <span class="fi fi-ar"></span> Argentina
+                </button>
             </div>
         </div>
     </div>
@@ -574,6 +647,17 @@
         const isAdmin = (usuarioLogado === "David");
         document.getElementById('btn-forcar-salvar').style.display = isAdmin ? 'inline-block' : 'none';
         document.getElementById('btn-forcar-classificacao').style.display = isAdmin ? 'inline-block' : 'none';
+    }
+
+    // NOVA FUNÇÃO: retorna 'Casa' ou 'Fora' se houver um vencedor definido (tempo normal ou pênaltis)
+    function vencedorReal(jogoId) {
+        const res = resultadosAtuais[jogoId];
+        if (!res || typeof res.golsT1 !== 'number' || typeof res.golsT2 !== 'number') return null;
+        const g1 = res.golsT1, g2 = res.golsT2;
+        if (g1 > g2) return 'Casa';
+        if (g1 < g2) return 'Fora';
+        // empate: verifica pênaltis
+        return res.penaltis || null;
     }
 
     // ==================== MODAIS ====================
@@ -791,10 +875,15 @@
 
     function vencedorJogo(jogoId, bets) {
         const bet = bets[jogoId];
-        if (!bet || !bet.resultado || bet.resultado === 'Empate') return null;
+        if (!bet || !bet.resultado) return null;
         const jogo = jogos.find(j => j.id === jogoId);
         if (!jogo) return null;
-        return (bet.resultado === 'Casa') ? jogo.time1 : jogo.time2;
+        if (bet.resultado === 'Casa') return jogo.time1;
+        if (bet.resultado === 'Fora') return jogo.time2;
+        if (bet.resultado === 'Empate' && bet.penaltis) {
+            return bet.penaltis === 'Casa' ? jogo.time1 : jogo.time2;
+        }
+        return null;
     }
 
     function resolverPlaceholder(texto, classificacao, statsGrupos, bets, atribuicaoTerceiros = null) {
@@ -966,8 +1055,9 @@
     }
 
     function criarLinhaJogo(jogo, bets, podeEditar, classificacao, statsGrupos, atribuicaoTerceiros) {
-        const bet = bets[jogo.id] || { placar: '', resultado: '', salvo: false };
+        const bet = bets[jogo.id] || { placar: '', resultado: '', salvo: false, penaltis: null };
         const tr = document.createElement('tr');
+        tr.setAttribute('data-jogo-id', jogo.id);
 
         const nomeTime1 = (jogo.fase === 'Fase de Grupos')
             ? `${flag(jogo.time1)} ${jogo.time1}`
@@ -984,12 +1074,29 @@
             colunaTime2 = `<span class="aposta-time">${nomeTime2}</span>`;
             colunaAcao = `<button class="btn btn-sm btn-salvar" onclick="salvarApostaJogo('${usuarioLogado}', ${jogo.id})">Salvar</button>`;
         } else {
-            colunaTime1 = `<span class="aposta-time ${bet.resultado === 'Casa' ? 'aposta-time-vencedor' : ''}">${nomeTime1}</span>`;
+            const casaVence = (bet.resultado === 'Casa') || (bet.resultado === 'Empate' && bet.penaltis === 'Casa');
+            const foraVence = (bet.resultado === 'Fora') || (bet.resultado === 'Empate' && bet.penaltis === 'Fora');
+            colunaTime1 = `<span class="aposta-time ${casaVence ? 'aposta-time-vencedor' : ''}">${nomeTime1}</span>`;
             colunaPlacar = `<span class="placar-salvo">${bet.placar}</span>`;
-            colunaTime2 = `<span class="aposta-time ${bet.resultado === 'Fora' ? 'aposta-time-vencedor' : ''}">${nomeTime2}</span>`;
+            colunaTime2 = `<span class="aposta-time ${foraVence ? 'aposta-time-vencedor' : ''}">${nomeTime2}</span>`;
+            let resultadoExib = '';
+            if (bet.resultado === 'Casa') resultadoExib = `Vitória ${nomeTime1}`;
+            else if (bet.resultado === 'Fora') resultadoExib = `Vitória ${nomeTime2}`;
+            else if (bet.resultado === 'Empate') {
+                if (bet.penaltis) {
+                    const vencedorPenaltis = bet.penaltis === 'Casa' ? nomeTime1 : nomeTime2;
+                    resultadoExib = `Empate (pênaltis: ${vencedorPenaltis})`;
+                } else {
+                    resultadoExib = 'Empate';
+                }
+            }
             colunaAcao = '<span class="salvo-badge">✅ Salvo</span>';
             if (podeEditar) {
                 colunaAcao += ` <button class="btn btn-sm btn-editar" onclick="editarAposta(${jogo.id})">✏️ Editar</button>`;
+            }
+            // Exibe a mensagem de pênaltis SOMENTE se houve disputa
+            if (bet.penaltis && resultadoExib) {
+                colunaAcao += `<div class="text-muted small">${resultadoExib}</div>`;
             }
         }
 
@@ -1008,6 +1115,7 @@
         const bet = bets[idJogo];
         if (!bet) return;
         bet.salvo = false;
+        bet.penaltis = null;
         apostasCollectionRef.doc(usuarioLogado).set({ palpites: bets }, { merge: true })
             .then(() => carregarApostasProprio())
             .then(() => renderizarBracket());
@@ -1021,7 +1129,7 @@
             if (row.cells.length < 5) continue;
             const idJogo = parseInt(row.cells[0].textContent);
             if (isNaN(idJogo)) continue;
-            const bet = bets[idJogo] || { placar: '', resultado: '', salvo: false };
+            const bet = bets[idJogo] || { placar: '', resultado: '', salvo: false, penaltis: null };
             if (bet.salvo) continue;
             const inputPlacar = row.cells[2].querySelector('input');
             if (inputPlacar) {
@@ -1038,6 +1146,63 @@
         apostasAtuais[usuarioLogado] = bets;
     }
 
+    // ==================== MODAL DE PÊNALTIS (ATUALIZADO) ====================
+    let salvamentoPendente = null;
+
+    function abrirModalPenaltis(participante, idJogo) {
+        const jogo = jogos.find(j => j.id === idJogo);
+        if (!jogo) return;
+        const bets = apostasAtuais[participante] || {};
+        const bet = bets[idJogo];
+        if (!bet) return;
+
+        const classificacao = calcularGrupos(bets);
+        const statsGrupos = calcularEstatisticasGrupos(bets);
+        const atribuicaoTerceiros = atribuirTerceiros(statsGrupos);
+        const nomeTime1 = (jogo.fase === 'Fase de Grupos')
+            ? `${flag(jogo.time1)} ${jogo.time1}`
+            : resolverPlaceholder(jogo.time1, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+        const nomeTime2 = (jogo.fase === 'Fase de Grupos')
+            ? `${flag(jogo.time2)} ${jogo.time2}`
+            : resolverPlaceholder(jogo.time2, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+
+        document.getElementById('penalty-btn-casa').innerHTML = `${nomeTime1}`;
+        document.getElementById('penalty-btn-fora').innerHTML = `${nomeTime2}`;
+
+        salvamentoPendente = { participante, idJogo };
+
+        const modal = new bootstrap.Modal(document.getElementById('modalPenaltis'));
+        modal.show();
+
+        document.getElementById('penalty-btn-casa').onclick = () => {
+            modal.hide();
+            confirmarPenalti('Casa');
+        };
+        document.getElementById('penalty-btn-fora').onclick = () => {
+            modal.hide();
+            confirmarPenalti('Fora');
+        };
+    }
+
+    async function confirmarPenalti(escolha) {
+        if (!salvamentoPendente) return;
+        const { participante, idJogo } = salvamentoPendente;
+        const bets = apostasAtuais[participante] || {};
+        const bet = bets[idJogo];
+        bet.penaltis = escolha;
+        bet.salvo = true;
+        try {
+            await apostasCollectionRef.doc(participante).set({ palpites: bets }, { merge: true });
+            carregarApostasProprio();
+            renderizarBracket();
+            mostrarToastNoTopo(`Aposta do jogo #${idJogo} salva!`);
+        } catch (e) {
+            console.error(e);
+            mostrarModal('Erro', 'Erro ao salvar a aposta.', 'erro');
+        }
+        salvamentoPendente = null;
+    }
+
     async function salvarApostaJogo(participante, idJogo) {
         if (usuarioLogado !== participante) {
             mostrarModal('Erro', 'Você não está logado como ' + participante, 'erro');
@@ -1050,6 +1215,11 @@
         const placar = bet.placar;
         if (!placar || !/^\d+-\d+$/.test(placar)) {
             mostrarModal('Atenção', 'Informe o placar no formato "2-1".', 'erro');
+            return;
+        }
+        const jogo = jogos.find(j => j.id === idJogo);
+        if (jogo && jogo.fase !== 'Fase de Grupos' && bet.resultado === 'Empate' && !bet.penaltis) {
+            abrirModalPenaltis(participante, idJogo);
             return;
         }
         bet.salvo = true;
@@ -1073,14 +1243,19 @@
             const bet = betsParticipante[idJogo];
             if (!bet || bet.salvo) continue;
             if (bet.placar && /^\d+-\d+$/.test(bet.placar)) {
+                const jogo = jogos.find(j => j.id === parseInt(idJogo));
+                if (jogo && jogo.fase !== 'Fase de Grupos' && bet.resultado === 'Empate' && !bet.penaltis) {
+                    continue;
+                }
                 bet.salvo = true;
                 salvouAlgum = true;
             }
         }
         if (!salvouAlgum) {
-            mostrarModal('Nada a salvar', 'Preencha corretamente os placares antes de salvar todas as apostas.', 'erro');
+            mostrarModal('Nada a salvar', 'Preencha corretamente os placares e, se for mata-mata com empate, escolha o vencedor nos pênaltis.', 'erro');
             return;
         }
+        apostasAtuais[usuarioLogado] = betsParticipante;
         try {
             await apostasCollectionRef.doc(usuarioLogado).set({ palpites: betsParticipante }, { merge: true });
             carregarApostasProprio();
@@ -1148,8 +1323,12 @@
                 const bet = bets[jogo.id];
                 if (!bet || !bet.placar || !bet.resultado) continue;
                 const acertouPlacar = (bet.placar === `${res.golsT1}-${res.golsT2}`);
-                const resultadoReal = resultadoTexto(res.golsT1, res.golsT2);
-                const acertouResultado = (bet.resultado === resultadoReal);
+                // Determina o vencedor do palpite (pode vir dos pênaltis)
+                const vencedorPalpite = bet.resultado === 'Casa' ? 'Casa' :
+                                        bet.resultado === 'Fora' ? 'Fora' :
+                                        (bet.penaltis || null);
+                const vencedorReal = vencedorReal(jogo.id);
+                const acertouResultado = (vencedorPalpite && vencedorReal && vencedorPalpite === vencedorReal);
                 if (acertouPlacar) pontosPlacar += 3;
                 if (acertouResultado) pontosResultado += 1;
             }
@@ -1304,10 +1483,9 @@
             const placarTexto = bet && bet.placar ? bet.placar : '';
             let casaVenceu = false, foraVenceu = false;
             if (bet && bet.resultado) {
-                casaVenceu = (bet.resultado === 'Casa');
-                foraVenceu = (bet.resultado === 'Fora');
+                casaVenceu = (bet.resultado === 'Casa') || (bet.resultado === 'Empate' && bet.penaltis === 'Casa');
+                foraVenceu = (bet.resultado === 'Fora') || (bet.resultado === 'Empate' && bet.penaltis === 'Fora');
             }
-            // Separa os gols para exibir ao lado de cada time
             let gols1 = '', gols2 = '';
             if (placarTexto && placarTexto.includes('-')) {
                 const partes = placarTexto.split('-');
