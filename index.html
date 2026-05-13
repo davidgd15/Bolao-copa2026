@@ -149,9 +149,9 @@
             color: black;
         }
         .team.vencedor {
-            color: #173a1d;
-                        font-size: large;
-            font-weight: 700;
+            font-size: 15px;
+            font-weight: 700;        /* negrito extra */
+            color: #0e235e;  
         }
         .btn-netzen {
             background-color: #f0ac2f;
@@ -164,7 +164,61 @@
         .btn-netzen:hover {
             background-color: #712ad0;
             color: #f0ac2f;
-            border-color: #f0ac2f;
+            border: 1px solid #f0ac2f;
+        }
+        /* NOVO LAYOUT DA APOSTA */
+        .aposta-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .aposta-placar {
+            width: 90px;
+            text-align: center;
+            font-size: 15px;
+            margin: 0 auto;
+        }
+        .placar-salvo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .aposta-saved {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        #tabela-apostas {
+            table-layout: fixed;
+            width: 100%;
+        }
+        #tabela-apostas th:nth-child(1) { width: 40px; }   /* # */
+        #tabela-apostas th:nth-child(2) { width: 30%; }    /* Seleção 1 */
+        #tabela-apostas th:nth-child(3) { width: 20%; }    /* Placar */
+        #tabela-apostas th:nth-child(4) { width: 30%; }    /* Seleção 2 */
+        #tabela-apostas th:nth-child(5) { width: auto; }   /* Ações */
+        #tabela-apostas td {
+            text-align: center;
+            vertical-align: middle;
+        }
+        .aposta-time {
+            justify-content: center;
+            display: flex;
+            align-items: center;
+        }
+        .aposta-time-vencedor {   
+            font-size: 15px;
+            font-weight: 700;        /* negrito extra */
+            color: #0e235e;          /* cor de destaque */
+        }
+        /* placar ao lado do time no chaveamento */
+        .match-score {
+            font-weight: bold;
+            margin-left: 4px;
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -225,7 +279,7 @@
             <button id="btn-forcar-salvar" class="btn btn-salvar mt-2" style="display: none;" onclick="salvarResultadosReais()">💾 Salvar</button>
         </div>
 
-        <!-- Aba Apostas -->
+        <!-- Aba Apostas (NOVO LAYOUT) -->
         <div class="tab-pane fade" id="apostas">
             <div class="row mb-3" id="salvar-todas-row" style="display: none;">
                 <div class="col">
@@ -234,7 +288,6 @@
             </div>
             <div class="table-responsive" id="apostas-container" style="display: none;">
                 <table class="table table-striped table-hover" id="tabela-apostas">
-                    <thead><tr><th>#</th><th>Jogo</th><th>Placar (ex: 2-1)</th><th>Resultado</th><th></th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
@@ -251,69 +304,58 @@
             <div id="bracket-container"></div>
         </div>
 
-                <!-- Aba Regras -->
+        <!-- Aba Regras -->
         <div class="tab-pane fade" id="regras">
             <div class="rules-table">
+
+                <div class="row mt-3 justify-content-center" style="margin-bottom: 40px;">
+                    <div class="col-auto">
+                        <div class="card border-0 shadow-sm p-3" style="background: #f0f9f4; border-radius: 15px; width: 250px; height: 80px;">
+                            <div class="text-center">
+                                <!-- <span style="font-size: 1.5rem;">💵</span> -->
+                                <p class="mb-1 fw-bold" style="color: #0e235e;">💵 Valor da entrada</p>
+                                <p class="mb-0" style="font-size: 1.2rem; font-weight: 700; color: #2a5a3a;">R$ 50,00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="card border-0 shadow-sm p-3" style="background: #f0f9f4; border-radius: 15px; width: 250px; height: 80px;">
+                            <div class="text-center">
+                              <!-- <span style="font-size: 1.5rem;">🏆</span>-->
+                                <p class="mb-1 fw-bold" style="color: #0e235e;">🏆 Pote total estimado</p>
+                                <p class="mb-0" style="font-size: 1.2rem; font-weight: 700; color: #2a5a3a;">R$ <span id="pote-total"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <h4 class="text-center mb-3">📋 Regras do Bolão</h4>
                 <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Critério</th>
-                            <th>Pontos</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Critério</th><th>Pontos</th></tr></thead>
                     <tbody>
-                        <tr>
-                            <td>Acertar o placar exato</td>
-                            <td>3 pontos</td>
-                        </tr>
-                        <tr>
-                            <td>Acertar o vencedor (ou empate)</td>
-                            <td>1 ponto</td>
-                        </tr>
-                        <tr>
-                            <td>Acertar o campeão</td>
-                            <td>20 pontos</td>
-                        </tr>
+                        <tr><td>Acertar o placar exato</td><td>3 pontos</td></tr>
+                        <tr><td>Acertar o vencedor (ou empate)</td><td>1 ponto</td></tr>
+                        <tr><td>Acertar o campeão</td><td>20 pontos</td></tr>
                     </tbody>
                 </table>
-
-                <h5 class="text-center mt-4">💰 Premiação</h5>
+                <h4 class="text-center mt-4">💰 Premiação</h5>
                 <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Colocação</th>
-                            <th>Percentual do Pote</th>
-                            <th>Valor</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Colocação</th><th>Percentual do Pote</th><th>Valor</th></tr></thead>
                     <tbody>
-                        <tr>
-                            <td>1º lugar</td>
-                            <td>80%</td>
-                            <td>R$ 760,00</td>
-                        </tr>
-                        <tr>
-                            <td>2º lugar</td>
-                            <td>10%</td>
-                            <td>R$ 95,00</td>
-                        </tr>
-                        <tr>
-                            <td>3º lugar</td>
-                            <td>5%</td>
-                            <td>R$ 47,5</td>
-                        </tr>
-                        <tr>
-                            <td>Último lugar</td>
-                            <td>5%</td>
-                            <td>R$ 47,5</td>
-                        </tr>
+                        <tr><td>1º lugar</td><td>80%</td><td>R$ 760,00</td></tr>
+                        <tr><td>2º lugar</td><td>10%</td><td>R$ 95,00</td></tr>
+                        <tr><td>3º lugar</td><td>5%</td><td>R$ 47,50</td></tr>
+                        <tr><td>Último lugar</td><td>5%</td><td>R$ 47,50</td></tr>
                     </tbody>
                 </table>
 
-                <div class="text-center mt-3">
-                    <p><strong>Valor da entrada:</strong> R$ 50,00</p>
-                    <p><strong>Pote total estimado:</strong> R$ <span id="pote-total"></span></p>
+                    <div class="mata-mata-rules" style="background: #f3f3f3; border-radius: 15px; padding: 15px;">
+                        <h4 class="text-center">📋 Regras mata-mata</h4>
+                        <p class="text-center mb-2"><strong>• Classificação:</strong> Avançam os dois primeiros de cada um dos 12 grupos (24 seleções) mais os <strong>8 melhores terceiros colocados</strong> entre todos os grupos.</p>
+                        <p class="text-center mb-2"><strong>• Confrontos:</strong> Os jogos das oitavas (16 avos) já são pré‑definidos pela FIFA, cruzando os primeiros colocados com terceiros de grupos específicos.</p>
+                        <p class="text-center mb-2"><strong>• Eliminação direta:</strong> A partir das oitavas, quem vencer avança. Se houver empate no tempo normal, haverá prorrogação e, persistindo, disputa de pênaltis.</p>
+                        <p class="text-center mb-2"><strong>• Fases seguintes:</strong> Oitavas → Quartas → Semifinais → Final (e disputa de 3º lugar).</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -661,48 +703,35 @@
         return stats;
     }
 
-
     function atualizarJogosMataMataComResultadosReais() {
-    // Verifica se todos os jogos da fase de grupos (IDs 1 a 72) já possuem resultado oficial
-    const todosGruposFinalizados = jogos
-        .filter(j => j.fase === "Fase de Grupos")
-        .every(j => jogoPossuiResultadoOficial(j.id));
+        const todosGruposFinalizados = jogos
+            .filter(j => j.fase === "Fase de Grupos")
+            .every(j => jogoPossuiResultadoOficial(j.id));
+        if (!todosGruposFinalizados) return;
+        if (window.__mataMataAtualizado) return;
 
-    if (!todosGruposFinalizados) return; // ainda não terminou
-
-    // Se já atualizou uma vez, não precisa repetir (evita sobrescrever)
-    if (window.__mataMataAtualizado) return;
-
-    // Calcula a classificação oficial a partir dos resultados reais
-    const resultadosOficiais = {};
-    for (const j of jogos) {
-        if (resultadosAtuais[j.id]) {
-            resultadosOficiais[j.id] = {
-                placar: `${resultadosAtuais[j.id].golsT1}-${resultadosAtuais[j.id].golsT2}`,
-                resultado: resultadoTexto(resultadosAtuais[j.id].golsT1, resultadosAtuais[j.id].golsT2)
-            };
+        const resultadosOficiais = {};
+        for (const j of jogos) {
+            if (resultadosAtuais[j.id]) {
+                resultadosOficiais[j.id] = {
+                    placar: `${resultadosAtuais[j.id].golsT1}-${resultadosAtuais[j.id].golsT2}`,
+                    resultado: resultadoTexto(resultadosAtuais[j.id].golsT1, resultadosAtuais[j.id].golsT2)
+                };
+            }
         }
+        const classificacaoOficial = calcularGrupos(resultadosOficiais);
+        const statsOficiais = calcularEstatisticasGrupos(resultadosOficiais);
+
+        for (const jogo of jogos) {
+            if (jogo.fase === "Fase de Grupos") continue;
+            const t1 = resolverPlaceholder(jogo.time1, classificacaoOficial, statsOficiais, {});
+            const t2 = resolverPlaceholder(jogo.time2, classificacaoOficial, statsOficiais, {});
+            jogo.time1 = t1.replace(/<[^>]*>/g, '').trim();
+            jogo.time2 = t2.replace(/<[^>]*>/g, '').trim();
+        }
+        window.__mataMataAtualizado = true;
+        renderizarTabelaJogos();
     }
-    const classificacaoOficial = calcularGrupos(resultadosOficiais);
-    const statsOficiais = calcularEstatisticasGrupos(resultadosOficiais);
-
-    // Atualiza os times dos jogos do mata‑mata (IDs ≥ 73)
-    for (const jogo of jogos) {
-        if (jogo.fase === "Fase de Grupos") continue; // só altera mata‑mata
-
-        // Resolve os placeholders com os dados oficiais
-        const t1 = resolverPlaceholder(jogo.time1, classificacaoOficial, statsOficiais, {});
-        const t2 = resolverPlaceholder(jogo.time2, classificacaoOficial, statsOficiais, {});
-
-        // Extrai apenas o nome do time (remove bandeira, se houver)
-        jogo.time1 = t1.replace(/<[^>]*>/g, '').trim();
-        jogo.time2 = t2.replace(/<[^>]*>/g, '').trim();
-    }
-
-    window.__mataMataAtualizado = true;
-    renderizarTabelaJogos(); // re-exibe a tabela com os nomes atualizados
-}
-
 
     const vagasTerceiros = [
         { placeholder: "3C/D/F",     grupos: ['C','D','F'] },
@@ -722,67 +751,43 @@
         return { time: ordenados[2][0], stats: ordenados[2][1] };
     }
 
-function atribuirTerceiros(statsGrupos) {
-    // 1. Coleta todos os 12 terceiros colocados
-    const todosTerceiros = [];
-    for (const letra of 'ABCDEFGHIJKL') {
-        const terc = getTerceiroDoGrupo(letra, statsGrupos);
-        if (terc) {
-            todosTerceiros.push({ grupo: letra, time: terc.time, stats: terc.stats });
+    function atribuirTerceiros(statsGrupos) {
+        const todosTerceiros = [];
+        for (const letra of 'ABCDEFGHIJKL') {
+            const terc = getTerceiroDoGrupo(letra, statsGrupos);
+            if (terc) todosTerceiros.push({ grupo: letra, time: terc.time, stats: terc.stats });
         }
-    }
-
-    // 2. Ordena pelos critérios FIFA
-    todosTerceiros.sort((a, b) => b.stats.pts - a.stats.pts || b.stats.sg - a.stats.sg || b.stats.gs - a.stats.gs);
-
-    // 3. Pega os 8 melhores
-    const classificados = todosTerceiros.slice(0, 8);
-
-    // 4. Vagas oficiais com seus grupos permitidos
-    const vagas = [
-        { placeholder: "3C/D/F",     grupos: ['C','D','F'] },
-        { placeholder: "3C/D/F/G/H", grupos: ['C','D','F','G','H'] },
-        { placeholder: "3C/E/F/H/I", grupos: ['C','E','F','H','I'] },
-        { placeholder: "3E/H/I/J/K", grupos: ['E','H','I','J','K'] },
-        { placeholder: "3B/E/F/I/J", grupos: ['B','E','F','I','J'] },
-        { placeholder: "3A/E/H/I/J", grupos: ['A','E','H','I','J'] },
-        { placeholder: "3E/F/G/I/J", grupos: ['E','F','G','I','J'] },
-        { placeholder: "3D/E/I/J/L", grupos: ['D','E','I','J','L'] }
-    ];
-
-    // 5. Backtracking para encontrar alocação válida
-    const alocar = (idx, disponiveis, atribuicao) => {
-        if (idx === vagas.length) return true; // todas as vagas preenchidas
-
-        const vaga = vagas[idx];
-        for (let i = 0; i < disponiveis.length; i++) {
-            if (vaga.grupos.includes(disponiveis[i].grupo)) {
-                const novoDisponiveis = [...disponiveis];
-                const escolhido = novoDisponiveis.splice(i, 1)[0];
-                if (alocar(idx + 1, novoDisponiveis, atribuicao)) {
-                    atribuicao[vaga.placeholder] = escolhido.time;
-                    return true;
+        todosTerceiros.sort((a, b) => b.stats.pts - a.stats.pts || b.stats.sg - a.stats.sg || b.stats.gs - a.stats.gs);
+        const classificados = todosTerceiros.slice(0, 8);
+        const vagas = vagasTerceiros.slice();
+        const atribuicao = {};
+        const alocar = (idx, disponiveis) => {
+            if (idx === vagas.length) return true;
+            const vaga = vagas[idx];
+            for (let i = 0; i < disponiveis.length; i++) {
+                if (vaga.grupos.includes(disponiveis[i].grupo)) {
+                    const novoDisponiveis = [...disponiveis];
+                    const escolhido = novoDisponiveis.splice(i, 1)[0];
+                    if (alocar(idx + 1, novoDisponiveis)) {
+                        atribuicao[vaga.placeholder] = escolhido.time;
+                        return true;
+                    }
                 }
             }
+            return false;
+        };
+        if (alocar(0, classificados)) {
+            return atribuicao;
+        } else {
+            console.warn('Não foi possível alocar respeitando todos os grupos. Usando fallback.');
+            const fallback = {};
+            const disponiveis = [...classificados];
+            vagas.forEach(vaga => {
+                fallback[vaga.placeholder] = disponiveis.length ? disponiveis.shift().time : vaga.placeholder;
+            });
+            return fallback;
         }
-        return false; // nenhum time disponível para esta vaga
-    };
-
-    const atribuicao = {};
-    if (alocar(0, classificados, atribuicao)) {
-        return atribuicao; // sucesso!
-    } else {
-        // Fallback: se nenhuma alocação perfeita for possível (não deve acontecer),
-        // preenche com o melhor disponível, ignorando os grupos
-        console.warn('Não foi possível alocar respeitando todos os grupos. Usando fallback.');
-        const fallback = {};
-        const disponiveis = [...classificados];
-        vagas.forEach(vaga => {
-            fallback[vaga.placeholder] = disponiveis.length ? disponiveis.shift().time : vaga.placeholder;
-        });
-        return fallback;
     }
-}
 
     function vencedorJogo(jogoId, bets) {
         const bet = bets[jogoId];
@@ -793,15 +798,11 @@ function atribuirTerceiros(statsGrupos) {
     }
 
     function resolverPlaceholder(texto, classificacao, statsGrupos, bets, atribuicaoTerceiros = null) {
-        if (countryCodeMap[texto]) {
-            return `${flag(texto)} ${texto}`;
-        }
-
+        if (countryCodeMap[texto]) return `${flag(texto)} ${texto}`;
         if (atribuicaoTerceiros && atribuicaoTerceiros[texto]) {
             const time = atribuicaoTerceiros[texto];
             return `${flag(time)} ${time}`;
         }
-
         const simples = texto.match(/^(\d)([A-Z])$/);
         if (simples) {
             const pos = parseInt(simples[1]) - 1;
@@ -812,31 +813,24 @@ function atribuirTerceiros(statsGrupos) {
             }
             return texto;
         }
-
         const terc = texto.match(/^3([A-Z\/]+)$/);
         if (terc) {
-            // Se temos um mapa de atribuição, ele já foi usado antes; mantido como fallback.
             if (atribuicaoTerceiros && atribuicaoTerceiros[texto]) {
                 const time = atribuicaoTerceiros[texto];
                 return `${flag(time)} ${time}`;
             }
             const gruposList = terc[1].split('/');
-            // Fallback: usa a função antiga se não houver mapa (não deve acontecer agora)
             const time = getTerceiroColocado(gruposList, statsGrupos);
             if (time) return `${flag(time)} ${time}`;
             return texto;
         }
-
         const vMatch = texto.match(/^V(?:encedor\s+J?)?(\d+)$/i);
         if (vMatch) {
             const jogoId = parseInt(vMatch[1]);
             const venc = vencedorJogo(jogoId, bets);
-            if (venc) {
-                return resolverPlaceholder(venc, classificacao, statsGrupos, bets, atribuicaoTerceiros);
-            }
+            if (venc) return resolverPlaceholder(venc, classificacao, statsGrupos, bets, atribuicaoTerceiros);
             return `Vencedor J${jogoId}`;
         }
-
         const pMatch = texto.match(/^Perdedor\s+J(\d+)$/i);
         if (pMatch) {
             const jogoId = parseInt(pMatch[1]);
@@ -850,11 +844,9 @@ function atribuirTerceiros(statsGrupos) {
             }
             return `Perdedor J${jogoId}`;
         }
-
         return texto;
     }
 
-    // Função auxiliar antiga para terceiros (usada como fallback)
     function getTerceiroColocado(gruposList, statsGrupos) {
         let melhor = null, melhorStats = null;
         gruposList.forEach(letra => {
@@ -976,7 +968,6 @@ function atribuirTerceiros(statsGrupos) {
     function criarLinhaJogo(jogo, bets, podeEditar, classificacao, statsGrupos, atribuicaoTerceiros) {
         const bet = bets[jogo.id] || { placar: '', resultado: '', salvo: false };
         const tr = document.createElement('tr');
-        let placarHTML, resultadoHTML, acaoHTML;
 
         const nomeTime1 = (jogo.fase === 'Fase de Grupos')
             ? `${flag(jogo.time1)} ${jogo.time1}`
@@ -985,41 +976,29 @@ function atribuirTerceiros(statsGrupos) {
             ? `${flag(jogo.time2)} ${jogo.time2}`
             : resolverPlaceholder(jogo.time2, classificacao, statsGrupos, bets, atribuicaoTerceiros);
 
-        const opcoesResultado = [
-            { value: 'Casa', label: `Vitória ${nomeTime1}` },
-            { value: 'Fora', label: `Vitória ${nomeTime2}` }
-        ];
-        if (jogo.fase === 'Fase de Grupos') {
-            opcoesResultado.push({ value: 'Empate', label: 'Empate' });
-        }
+        let colunaTime1, colunaPlacar, colunaTime2, colunaAcao;
 
         if (!bet.salvo) {
-            placarHTML = `<input type="text" class="form-control form-control-sm placar-input" placeholder="ex: 2-1" value="${bet.placar}" style="width:80px; text-align:center;">`;
-            resultadoHTML = `<select class="form-select form-select-sm resultado-select" style="width:200px;">
-                <option value="">--</option>
-                ${opcoesResultado.map(op => `<option value="${op.value}" ${bet.resultado === op.value ? 'selected' : ''}>${op.label}</option>`).join('')}
-            </select>`;
-            acaoHTML = `<button class="btn btn-sm btn-salvar" onclick="salvarApostaJogo('${usuarioLogado}', ${jogo.id})">Salvar</button>`;
+            colunaTime1 = `<span class="aposta-time">${nomeTime1}</span>`;
+            colunaPlacar = `<input type="text" class="form-control form-control-sm aposta-placar" placeholder="ex: 2-1" value="${bet.placar}">`;
+            colunaTime2 = `<span class="aposta-time">${nomeTime2}</span>`;
+            colunaAcao = `<button class="btn btn-sm btn-salvar" onclick="salvarApostaJogo('${usuarioLogado}', ${jogo.id})">Salvar</button>`;
         } else {
-            placarHTML = bet.placar || '<span class="text-muted">-</span>';
-            let resultadoTexto = '';
-            if (bet.resultado === 'Casa') resultadoTexto = `Vitória ${nomeTime1}`;
-            else if (bet.resultado === 'Fora') resultadoTexto = `Vitória ${nomeTime2}`;
-            else if (bet.resultado === 'Empate') resultadoTexto = 'Empate';
-            resultadoHTML = resultadoTexto || '<span class="text-muted">-</span>';
-            acaoHTML = '<span class="salvo-badge">✅ Salvo</span>';
+            colunaTime1 = `<span class="aposta-time ${bet.resultado === 'Casa' ? 'aposta-time-vencedor' : ''}">${nomeTime1}</span>`;
+            colunaPlacar = `<span class="placar-salvo">${bet.placar}</span>`;
+            colunaTime2 = `<span class="aposta-time ${bet.resultado === 'Fora' ? 'aposta-time-vencedor' : ''}">${nomeTime2}</span>`;
+            colunaAcao = '<span class="salvo-badge">✅ Salvo</span>';
             if (podeEditar) {
-                acaoHTML += ` <button class="btn btn-sm btn-editar" onclick="editarAposta(${jogo.id})">✏️ Editar</button>`;
+                colunaAcao += ` <button class="btn btn-sm btn-editar" onclick="editarAposta(${jogo.id})">✏️ Editar</button>`;
             }
         }
 
-        const nomeJogo = `${nomeTime1} vs ${nomeTime2}`;
         tr.innerHTML = `
             <td>${jogo.id}</td>
-            <td>${nomeJogo}</td>
-            <td>${placarHTML}</td>
-            <td>${resultadoHTML}</td>
-            <td>${acaoHTML}</td>`;
+            <td>${colunaTime1}</td>
+            <td>${colunaPlacar}</td>
+            <td>${colunaTime2}</td>
+            <td>${colunaAcao}</td>`;
         return tr;
     }
 
@@ -1045,25 +1024,18 @@ function atribuirTerceiros(statsGrupos) {
             const bet = bets[idJogo] || { placar: '', resultado: '', salvo: false };
             if (bet.salvo) continue;
             const inputPlacar = row.cells[2].querySelector('input');
-            const selectResultado = row.cells[3].querySelector('select');
-            if (inputPlacar) bet.placar = inputPlacar.value.trim();
-            if (selectResultado) bet.resultado = selectResultado.value;
+            if (inputPlacar) {
+                bet.placar = inputPlacar.value.trim();
+                if (/^\d+-\d+$/.test(bet.placar)) {
+                    const [g1, g2] = bet.placar.split('-').map(Number);
+                    bet.resultado = resultadoTexto(g1, g2);
+                } else {
+                    bet.resultado = '';
+                }
+            }
             bets[idJogo] = bet;
         }
         apostasAtuais[usuarioLogado] = bets;
-    }
-
-    function corrigirPlacar(placar, resultado) {
-        let [g1, g2] = placar.split('-').map(Number);
-        if (isNaN(g1) || isNaN(g2)) return placar;
-        if (resultado === 'Casa') {
-            if (g1 <= g2) { [g1, g2] = [g2, g1]; if (g1 <= g2) g1 = g2 + 1; }
-        } else if (resultado === 'Fora') {
-            if (g2 <= g1) { [g1, g2] = [g2, g1]; if (g2 <= g1) g2 = g1 + 1; }
-        } else if (resultado === 'Empate') {
-            if (g1 !== g2) { const maxGols = Math.max(g1, g2); g1 = g2 = maxGols; }
-        }
-        return `${g1}-${g2}`;
     }
 
     async function salvarApostaJogo(participante, idJogo) {
@@ -1076,16 +1048,10 @@ function atribuirTerceiros(statsGrupos) {
         const bet = bets[idJogo];
         if (!bet || bet.salvo) return;
         const placar = bet.placar;
-        const resultado = bet.resultado;
-        if (!placar || !resultado) {
-            mostrarModal('Atenção', 'Preencha placar e resultado.', 'erro');
+        if (!placar || !/^\d+-\d+$/.test(placar)) {
+            mostrarModal('Atenção', 'Informe o placar no formato "2-1".', 'erro');
             return;
         }
-        if (!/^\d+-\d+$/.test(placar)) {
-            mostrarModal('Formato inválido', 'Use o formato "2-1".', 'erro');
-            return;
-        }
-        bet.placar = corrigirPlacar(placar, resultado);
         bet.salvo = true;
         try {
             await apostasCollectionRef.doc(participante).set({ palpites: bets }, { merge: true });
@@ -1100,30 +1066,21 @@ function atribuirTerceiros(statsGrupos) {
 
     async function salvarTodasApostas() {
         if (!usuarioLogado) return;
+        sincronizarApostasDaTabela();
         const betsParticipante = apostasAtuais[usuarioLogado] || {};
-        const linhas = document.querySelectorAll('#tabela-apostas tbody tr');
         let salvouAlgum = false;
-        for (const row of linhas) {
-            if (row.cells.length < 5) continue;
-            const idJogo = parseInt(row.cells[0].textContent);
-            if (isNaN(idJogo)) continue;
-            const bet = betsParticipante[idJogo] || { placar: '', resultado: '', salvo: false };
-            if (bet.salvo) continue;
-            const inputPlacar = row.cells[2].querySelector('input');
-            const selectResultado = row.cells[3].querySelector('select');
-            if (!inputPlacar || !selectResultado) continue;
-            const placar = inputPlacar.value.trim();
-            const resultado = selectResultado.value;
-            if (!placar || !resultado) continue;
-            if (!/^\d+-\d+$/.test(placar)) continue;
-            betsParticipante[idJogo] = { placar: corrigirPlacar(placar, resultado), resultado, salvo: true };
-            salvouAlgum = true;
+        for (const idJogo in betsParticipante) {
+            const bet = betsParticipante[idJogo];
+            if (!bet || bet.salvo) continue;
+            if (bet.placar && /^\d+-\d+$/.test(bet.placar)) {
+                bet.salvo = true;
+                salvouAlgum = true;
+            }
         }
         if (!salvouAlgum) {
-            mostrarModal('Nada a salvar', 'Preencha corretamente os jogos antes de salvar todas as apostas.', 'erro');
+            mostrarModal('Nada a salvar', 'Preencha corretamente os placares antes de salvar todas as apostas.', 'erro');
             return;
         }
-        apostasAtuais[usuarioLogado] = betsParticipante;
         try {
             await apostasCollectionRef.doc(usuarioLogado).set({ palpites: betsParticipante }, { merge: true });
             carregarApostasProprio();
@@ -1193,13 +1150,8 @@ function atribuirTerceiros(statsGrupos) {
                 const acertouPlacar = (bet.placar === `${res.golsT1}-${res.golsT2}`);
                 const resultadoReal = resultadoTexto(res.golsT1, res.golsT2);
                 const acertouResultado = (bet.resultado === resultadoReal);
-
-                if (acertouPlacar) {
-                    pontosPlacar += 3;
-                }
-                if (acertouResultado) {
-                    pontosResultado += 1;
-                }
+                if (acertouPlacar) pontosPlacar += 3;
+                if (acertouResultado) pontosResultado += 1;
             }
             return { nome, pontosPlacar, pontosResultado, total: pontosPlacar + pontosResultado };
         });
@@ -1270,10 +1222,10 @@ function atribuirTerceiros(statsGrupos) {
 
     function configurarListeners() {
         resultadosDocRef.onSnapshot(doc => {
-        if (doc.exists()) resultadosAtuais = doc.data().data || {};
+            if (doc.exists()) resultadosAtuais = doc.data().data || {};
             else resultadosAtuais = {};
-                atualizarJogosMataMataComResultadosReais(); // verifica e atualiza os nomes
-                atualizarTudo();
+            atualizarJogosMataMataComResultadosReais();
+            atualizarTudo();
         });
         apostasCollectionRef.onSnapshot(snapshot => {
             apostasAtuais = {};
@@ -1325,120 +1277,120 @@ function atribuirTerceiros(statsGrupos) {
     }
 
     function renderizarBracket() {
-    const container = document.getElementById('bracket-container');
-    if (!usuarioLogado) {
-        container.innerHTML = '<p class="text-center">Faça login para ver seu chaveamento previsto.</p>';
-        return;
-    }
-    const bets = apostasAtuais[usuarioLogado] || {};
-    const classificacao = calcularGrupos(bets);
-    const statsGrupos = calcularEstatisticasGrupos(bets);
-    const atribuicaoTerceiros = atribuirTerceiros(statsGrupos);
-
-    const resolver = (texto) => {
-        if (atribuicaoTerceiros && atribuicaoTerceiros[texto]) {
-            const time = atribuicaoTerceiros[texto];
-            return `${flag(time)} ${time}`;
+        const container = document.getElementById('bracket-container');
+        if (!usuarioLogado) {
+            container.innerHTML = '<p class="text-center">Faça login para ver seu chaveamento previsto.</p>';
+            return;
         }
-        return resolverPlaceholder(texto, classificacao, statsGrupos, bets, atribuicaoTerceiros);
-    };
+        const bets = apostasAtuais[usuarioLogado] || {};
+        const classificacao = calcularGrupos(bets);
+        const statsGrupos = calcularEstatisticasGrupos(bets);
+        const atribuicaoTerceiros = atribuirTerceiros(statsGrupos);
 
-    const cardHTML = (jogoId) => {
-        const jogo = jogos.find(j => j.id === jogoId);
-        if (!jogo) return '';
-        const t1 = resolver(jogo.time1);
-        const t2 = resolver(jogo.time2);
-        const bet = bets[jogoId];
-        const placarTexto = bet && bet.placar ? bet.placar : '';
-        let casaVenceu = false, foraVenceu = false;
-        if (bet && bet.resultado) {
-            casaVenceu = (bet.resultado === 'Casa');
-            foraVenceu = (bet.resultado === 'Fora');
-        }
-        return `
-            <div class="match-card" id="jogo-${jogoId}">
-                <div class="match-num">Jogo ${jogoId}</div>
-                <div class="team ${casaVenceu ? 'vencedor' : ''}">${t1}</div>
-                <div class="vs-text">vs</div>
-                <div class="team ${foraVenceu ? 'vencedor' : ''}">${t2}</div>
-                ${placarTexto ? `<div class="placar">${placarTexto}</div>` : ''}
-            </div>`;
-    };
+        const resolver = (texto) => {
+            if (atribuicaoTerceiros && atribuicaoTerceiros[texto]) {
+                const time = atribuicaoTerceiros[texto];
+                return `${flag(time)} ${time}`;
+            }
+            return resolverPlaceholder(texto, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+        };
 
-    const fases = [
-        { nome: "16 avos", jogos: [74,77, 73,75, 83,84, 81,82, 76,78, 79,80, 86,88, 85,87] },
-        { nome: "Oitavas", jogos: [89,90, 93,94, 91,92, 95,96] },
-        { nome: "Quartas", jogos: [97,98, 99,100] },
-        { nome: "Semifinal", jogos: [101, 102] },
-        { nome: "Final", jogos: [104] },
-        { nome: "3º Lugar", jogos: [103] }
-    ];
+        const cardHTML = (jogoId) => {
+            const jogo = jogos.find(j => j.id === jogoId);
+            if (!jogo) return '';
+            const t1 = resolver(jogo.time1);
+            const t2 = resolver(jogo.time2);
+            const bet = bets[jogoId];
+            const placarTexto = bet && bet.placar ? bet.placar : '';
+            let casaVenceu = false, foraVenceu = false;
+            if (bet && bet.resultado) {
+                casaVenceu = (bet.resultado === 'Casa');
+                foraVenceu = (bet.resultado === 'Fora');
+            }
+            // Separa os gols para exibir ao lado de cada time
+            let gols1 = '', gols2 = '';
+            if (placarTexto && placarTexto.includes('-')) {
+                const partes = placarTexto.split('-');
+                gols1 = partes[0];
+                gols2 = partes[1];
+            }
+            return `
+                <div class="match-card" id="jogo-${jogoId}">
+                    <div class="match-num">Jogo ${jogoId}</div>
+                    <div class="team ${casaVenceu ? 'vencedor' : ''}">${t1}${gols1 ? `<span class="match-score"> ${gols1}</span>` : ''}</div>
+                    <div class="vs-text">vs</div>
+                    <div class="team ${foraVenceu ? 'vencedor' : ''}">${t2}${gols2 ? `<span class="match-score"> ${gols2}</span>` : ''}</div>
+                </div>`;
+        };
 
-    const conexoes = {
-        89: [74, 77], 90: [73, 75], 91: [76, 78], 92: [79, 80],
-        93: [83, 84], 94: [81, 82], 95: [86, 88], 96: [85, 87],
-        97: [89, 90], 98: [93, 94], 99: [91, 92], 100: [95, 96],
-        101: [97, 98], 102: [99, 100], 103: [101, 102], 104: [101, 102]
-    };
+        const fases = [
+            { nome: "16 avos", jogos: [74,77, 73,75, 83,84, 81,82, 76,78, 79,80, 86,88, 85,87] },
+            { nome: "Oitavas", jogos: [89,90, 93,94, 91,92, 95,96] },
+            { nome: "Quartas", jogos: [97,98, 99,100] },
+            { nome: "Semifinal", jogos: [101, 102] },
+            { nome: "Final", jogos: [104] },
+            { nome: "3º Lugar", jogos: [103] }
+        ];
 
-    // Monta o HTML (agora com pair-group)
-    let html = '<div class="bracket-wrapper">';
-    html += '<svg class="bracket-svg" id="bracket-svg"></svg>';
-    html += '<div class="bracket-cols">';
+        const conexoes = {
+            89: [74, 77], 90: [73, 75], 91: [76, 78], 92: [79, 80],
+            93: [83, 84], 94: [81, 82], 95: [86, 88], 96: [85, 87],
+            97: [89, 90], 98: [93, 94], 99: [91, 92], 100: [95, 96],
+            101: [97, 98], 102: [99, 100], 103: [101, 102], 104: [101, 102]
+        };
 
-    fases.forEach(fase => {
-        html += `<div class="round-column"><div class="round-title">${fase.nome}</div>`;
-        const jogosFase = fase.jogos;
-        for (let i = 0; i < jogosFase.length; i += 2) {
-            html += `<div class="pair-group" id="pair-${fase.nome}-${i}">`;
-            html += cardHTML(jogosFase[i]);
-            if (jogosFase[i + 1]) {
-                html += cardHTML(jogosFase[i + 1]);
+        let html = '<div class="bracket-wrapper">';
+        html += '<svg class="bracket-svg" id="bracket-svg"></svg>';
+        html += '<div class="bracket-cols">';
+
+        fases.forEach(fase => {
+            html += `<div class="round-column"><div class="round-title">${fase.nome}</div>`;
+            const jogosFase = fase.jogos;
+            for (let i = 0; i < jogosFase.length; i += 2) {
+                html += `<div class="pair-group" id="pair-${fase.nome}-${i}">`;
+                html += cardHTML(jogosFase[i]);
+                if (jogosFase[i + 1]) {
+                    html += cardHTML(jogosFase[i + 1]);
+                }
+                html += `</div>`;
             }
             html += `</div>`;
-        }
-        html += `</div>`;
-    });
+        });
 
-    html += '</div></div>';
-    container.innerHTML = html;
+        html += '</div></div>';
+        container.innerHTML = html;
 
-    // Desenha as linhas do SVG baseado nos centros dos pair-group
-    setTimeout(() => {
-        const svg = document.getElementById('bracket-svg');
-        const wrapper = document.querySelector('.bracket-wrapper');
-        if (!svg || !wrapper) return;
-
-        const wrapperRect = wrapper.getBoundingClientRect();
-        svg.setAttribute('viewBox', `0 0 ${wrapperRect.width} ${wrapperRect.height}`);
-        svg.style.width = wrapperRect.width + 'px';
-        svg.style.height = wrapperRect.height + 'px';
-
-        let lines = '';
-        for (const [proxJogo, anteriores] of Object.entries(conexoes)) {
-            const cardProx = document.getElementById(`jogo-${proxJogo}`);
-            if (!cardProx) continue;
-            const pairProx = cardProx.closest('.pair-group');
-            if (!pairProx) continue;
-            const rectProx = pairProx.getBoundingClientRect();
-            const xProx = rectProx.left - wrapperRect.left + rectProx.width / 2;
-            const yProx = rectProx.top - wrapperRect.top + rectProx.height / 2;
-
-            for (const antId of anteriores) {
-                const cardAnt = document.getElementById(`jogo-${antId}`);
-                if (!cardAnt) continue;
-                const pairAnt = cardAnt.closest('.pair-group');
-                if (!pairAnt) continue;
-                const rectAnt = pairAnt.getBoundingClientRect();
-                const xAnt = rectAnt.right - wrapperRect.left;
-                const yAnt = rectAnt.top - wrapperRect.top + rectAnt.height / 2;
-
-                lines += `<line x1="${xAnt}" y1="${yAnt}" x2="${xProx}" y2="${yProx}" stroke="#2a5a3a" stroke-width="2" opacity="0.8" />`;
+        setTimeout(() => {
+            const svg = document.getElementById('bracket-svg');
+            const wrapper = document.querySelector('.bracket-wrapper');
+            if (!svg || !wrapper) return;
+            const wrapperRect = wrapper.getBoundingClientRect();
+            svg.setAttribute('viewBox', `0 0 ${wrapperRect.width} ${wrapperRect.height}`);
+            svg.style.width = wrapperRect.width + 'px';
+            svg.style.height = wrapperRect.height + 'px';
+            let lines = '';
+            for (const [proxJogo, anteriores] of Object.entries(conexoes)) {
+                const cardProx = document.getElementById(`jogo-${proxJogo}`);
+                if (!cardProx) continue;
+                const pairProx = cardProx.closest('.pair-group');
+                if (!pairProx) continue;
+                const rectProx = pairProx.getBoundingClientRect();
+                const xProx = rectProx.left - wrapperRect.left + rectProx.width / 2;
+                const yProx = rectProx.top - wrapperRect.top + rectProx.height / 2;
+                for (const antId of anteriores) {
+                    const cardAnt = document.getElementById(`jogo-${antId}`);
+                    if (!cardAnt) continue;
+                    const pairAnt = cardAnt.closest('.pair-group');
+                    if (!pairAnt) continue;
+                    const rectAnt = pairAnt.getBoundingClientRect();
+                    const xAnt = rectAnt.right - wrapperRect.left;
+                    const yAnt = rectAnt.top - wrapperRect.top + rectAnt.height / 2;
+                    lines += `<line x1="${xAnt}" y1="${yAnt}" x2="${xProx}" y2="${yProx}" stroke="#2a5a3a" stroke-width="2" opacity="0.8" />`;
+                }
             }
-        }
-        svg.innerHTML = lines;
-    }, 200);
-}
+            svg.innerHTML = lines;
+        }, 200);
+    }
 
     window.addEventListener('DOMContentLoaded', async () => {
         const selectLogin = document.getElementById('login-participante');
@@ -1468,7 +1420,6 @@ function atribuirTerceiros(statsGrupos) {
             if (usuarioLogado) carregarApostasProprio();
         });
         document.getElementById('chaveamento-tab').addEventListener('shown.bs.tab', renderizarBracket);
-            // ==================== REGRAS (cálculo do pote) ====================
         document.getElementById('pote-total').textContent = (50 * participantes.length).toLocaleString('pt-BR');
     });
 </script>
